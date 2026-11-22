@@ -1,6 +1,6 @@
 # 🚀 Deployment Guide
 
-This guide will help you deploy the Uber Clone application to production using Render for the backend and Vercel for the frontend.
+This guide will help you deploy the YENKO RIDE application to production using Render for the backend and Vercel for the frontend.
 
 ## 📋 Prerequisites
 
@@ -8,7 +8,7 @@ Before deploying, ensure you have:
 
 1. **GitHub Repository** - Your code pushed to GitHub
 2. **MongoDB Atlas Account** - For production database
-3. **Google Maps API Key** - For location services
+3. **OpenStreetMap** - Free map services (no API key required; geocoding via Nominatim + routing via OSRM)
 4. **Render Account** - For backend deployment
 5. **Vercel Account** - For frontend deployment
 
@@ -28,7 +28,7 @@ Before deploying, ensure you have:
 2. Click "New +" → "Web Service"
 3. Connect your GitHub repository
 4. Configure the service:
-   - **Name**: `uber-clone-backend`
+   - **Name**: `yenkoroide-backend`
    - **Environment**: `Node`
    - **Region**: Choose closest to your users
    - **Branch**: `main`
@@ -46,7 +46,6 @@ PORT=3000
 MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/uber-clone
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
 JWT_EXPIRES_IN=24h
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 ### Step 4: Deploy
@@ -75,7 +74,6 @@ In Vercel dashboard, add these environment variables:
 
 ```env
 VITE_API_URL=https://your-backend-app.onrender.com
-VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 ### Step 3: Deploy
@@ -131,7 +129,7 @@ Both Render and Vercel will automatically redeploy when you push to the main bra
 - [ ] Environment variables are set correctly
 - [ ] MongoDB Atlas IP whitelist is configured
 - [ ] JWT secret is secure and random
-- [ ] Google Maps API key has proper restrictions
+- [ ] No API keys required - using free OpenStreetMap services (Nominatim + OSRM)
 - [ ] CORS is configured for production domains
 - [ ] HTTPS is enabled (automatic on both platforms)
 

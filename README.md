@@ -1,4 +1,4 @@
-# 🚗 Uber Clone - Full Stack Ride Sharing Application
+# 🚗 YENKO RIDE - Full Stack Ride Sharing Application
 
 A comprehensive ride-sharing platform built with modern web technologies, featuring real-time communication, location services, and secure authentication. This application provides both user and driver (captain) interfaces with live ride tracking and management.
 
@@ -28,7 +28,7 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 
 - **User Registration & Authentication** - Secure signup/login with JWT tokens
 - **Real-time Ride Booking** - Book rides with live driver tracking
-- **Location Search** - Autocomplete address search with Google Maps integration
+- **Location Search** - Autocomplete address search with OpenStreetMap (Nominatim) integration
 - **Multiple Vehicle Types** - Choose from car, motorcycle, or auto-rickshaw
 - **Live Ride Tracking** - Real-time GPS tracking during rides
 - **Fare Calculation** - Dynamic pricing based on distance and vehicle type
@@ -67,7 +67,7 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Socket.IO Client 4.8.1** - Real-time bidirectional communication
 - **Axios 1.9.0** - Promise-based HTTP client for API requests
 - **GSAP 3.13.0** - High-performance animations and transitions
-- **@react-google-maps/api 2.20.6** - Google Maps integration for React
+- **react-leaflet 5.0.0 + Leaflet 1.9.4** - OpenStreetMap maps integration for React
 - **Remix Icons 4.6.0** - Beautiful open-source icon library
 
 ### Backend Technologies
@@ -126,7 +126,7 @@ uber-clone/
 │   │   ├── user.service.js          # User-related business operations
 │   │   ├── captain.service.js       # Captain-related business operations
 │   │   ├── ride.service.js          # Ride management and fare calculation
-│   │   └── maps.service.js          # Google Maps API integration
+│   │   └── maps.service.js          # OpenStreetMap (Nominatim + OSRM) API integration
 │   ├── middlewares/                  # Custom Express middleware
 │   │   └── auth.middlewares.js      # JWT authentication and authorization
 │   ├── utils/                        # Utility functions and helpers
@@ -228,7 +228,7 @@ The frontend follows a modular component architecture with clear separation of c
 
 #### Reusable Components
 
-- **LocationSearchPanel.jsx** - Google Maps autocomplete integration
+- **LocationSearchPanel.jsx** - OpenStreetMap autocomplete integration
 - **VehiclePanel.jsx** - Vehicle selection with dynamic pricing
 - **LiveTracking.jsx** - Real-time GPS tracking with Socket.IO
 - **RidePopUp.jsx** - Ride request notifications
@@ -291,7 +291,8 @@ The frontend follows a modular component architecture with clear separation of c
 {
   "axios": "^1.9.0",
   "socket.io-client": "^4.8.1",
-  "@react-google-maps/api": "^2.20.6"
+  "react-leaflet": "^5.0.0",
+  "leaflet": "^1.9.4"
 }
 ```
 
@@ -1002,7 +1003,7 @@ Before running this application, make sure you have the following installed:
 - **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
 - **npm** or **yarn** - Package manager
 - **MongoDB** - [Local installation](https://docs.mongodb.com/manual/installation/) or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-- **Google Maps API Key** - [Get API Key](https://developers.google.com/maps/documentation/javascript/get-api-key)
+- **OpenStreetMap** - Free map tiles, geocoding and routing (no API key required)
 - **Git** - [Download](https://git-scm.com/)
 
 ---
@@ -1074,8 +1075,8 @@ MONGODB_URL=mongodb://localhost:27017/uber-clone
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
 JWT_EXPIRES_IN=24h
 
-# Google Maps API (for location services)
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+# OpenStreetMap API (for location services - no API key required)
+# Geocoding: Nominatim | Routing: OSRM
 
 # Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5173
@@ -1087,8 +1088,7 @@ FRONTEND_URL=http://localhost:5173
 # API Configuration
 VITE_API_URL=http://localhost:3000
 
-# Google Maps API Key
-VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+# OpenStreetMap maps use free public services - no API key required
 ```
 
 ---
@@ -1118,7 +1118,6 @@ VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
    MONGODB_URL=your-mongodb-atlas-connection-string
    JWT_SECRET=your-production-jwt-secret
    JWT_EXPIRES_IN=24h
-   GOOGLE_MAPS_API_KEY=your-google-maps-api-key
    FRONTEND_URL=https://your-frontend-domain.vercel.app
    ```
 
@@ -1140,7 +1139,6 @@ VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 
    ```
    VITE_API_URL=https://your-backend-domain.onrender.com
-   VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
    ```
 
 4. **Deploy**
@@ -1309,13 +1307,13 @@ Error: secretOrPrivateKey has a value of "undefined"
 
 **Solution:** Set JWT_SECRET in your .env file
 
-**Google Maps API Error**
+**Maps / Geocoding Error**
 
 ```bash
-Error: Google Maps API key is not configured
+Error: Address not found
 ```
 
-**Solution:** Set GOOGLE_MAPS_API_KEY in your .env file
+**Solution:** Check the pickup/destination addresses and ensure the backend can reach Nominatim (geocoding) and OSRM (routing) services
 
 #### Frontend Issues
 
@@ -1330,10 +1328,10 @@ Error: Network Error
 **Maps Not Loading**
 
 ```bash
-Error: Google Maps JavaScript API error
+Error: Map container failed to initialize
 ```
 
-**Solution:** Check VITE_GOOGLE_MAPS_API_KEY and enable required APIs
+**Solution:** Ensure `import 'leaflet/dist/leaflet.css';` is imported in the map component and the backend is reachable
 
 **Socket Connection Failed**
 
@@ -1434,7 +1432,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Express.js** - For the robust backend framework
 - **MongoDB** - For the flexible database solution
 - **Socket.IO** - For real-time communication
-- **Google Maps** - For location services
+- **OpenStreetMap** - For free map tiles, geocoding and routing services
 - **Tailwind CSS** - For the utility-first CSS framework
 - **Vercel & Render** - For hosting and deployment services
 

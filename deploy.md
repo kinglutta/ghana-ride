@@ -6,7 +6,7 @@ Before starting deployment, ensure you have:
 
 - [ ] GitHub account and repository created
 - [ ] MongoDB Atlas account (free tier available)
-- [ ] Google Maps API key with Places API enabled
+- [ ] OpenStreetMap account not required (free services used: Nominatim + OSRM)
 - [ ] Render account (free tier available)
 - [ ] Vercel account (free tier available)
 
@@ -85,7 +85,6 @@ PORT=3000
 MONGODB_URL=mongodb+srv://uber_admin:yourpassword@uber-clone-cluster.xxxxx.mongodb.net/uber-clone?retryWrites=true&w=majority
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long-for-production
 JWT_EXPIRES_IN=24h
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 FRONTEND_URL=https://your-app.vercel.app
 ```
 
@@ -124,7 +123,6 @@ In Vercel dashboard → Settings → Environment Variables:
 
 ```env
 VITE_API_URL=https://your-backend-app.onrender.com
-VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 ### 3.4 Deploy

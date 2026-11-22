@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { useJsApiLoader, GoogleMap, MarkerF, DirectionsRenderer } from '@react-google-maps/api'
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import axios from 'axios'
 import MapFallback from './MapFallback'
 import { SocketContext } from '../context/SocketContext'
 
@@ -13,24 +15,71 @@ const center = {
     lng: -38.523
 };
 
-// Static libraries array to prevent reloading
-const libraries = ['places'];
+// Inner component rendered inside MapContainer so we can use the useMap hook
+const TrackingMap = ({ currentPosition, captainPosition, showCaptain, routeCoordinates }) => {
+    const map = useMap();
+
+    // Keep the map centered on the user / captain position
+    useEffect(() => {
+        if (!map) return;
+        map.setView([currentPosition.lat, currentPosition.lng], 15);
+    }, [currentPosition, map]);
+
+    useEffect(() => {
+        if (map && showCaptain && captainPosition) {
+            map.setView([captainPosition.lat, captainPosition.lng], 15);
+        }
+    }, [captainPosition, showCaptain, map]);
+
+    return (
+        <>
+            {/* Route between pickup and destination */}
+            {routeCoordinates && (
+                <Polyline
+                    path={routeCoordinates}
+                    lineCap="round"
+                    lineJoin="round"
+                    pathOptions={{
+                        strokeColor: '#3b82f6',
+                        strokeWeight: 5,
+                        opacity: 0.8
+                    }}
+                />
+            )}
+
+            {/* User location marker */}
+            <CircleMarker
+                position={[currentPosition.lat, currentPosition.lng]}
+                pathOptions={{
+                    color: '#3b82f6',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.35,
+                    weight: 0
+                }}
+                radius={8}
+            >
+                <Popup>Your Location</Popup>
+            </CircleMarker>
+
+            {/* Captain location marker */}
+            {showCaptain && captainPosition && (
+                <Marker position={[captainPosition.lat, captainPosition.lng]}>
+                    <Popup>Captain Location</Popup>
+                </Marker>
+            )}
+        </>
+    );
+};
 
 const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
     const [currentPosition, setCurrentPosition] = useState(center);
     const [captainPosition, setCaptainPosition] = useState(null);
-    const [directions, setDirections] = useState(null);
+    const [routeCoordinates, setRouteCoordinates] = useState(null);
+    const [loadError, setLoadError] = useState(null);
     const { socket } = useContext(SocketContext);
 
-    // Load Google Maps API using the modern hook
-    const { isLoaded, loadError } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: libraries // Use static libraries array
-    });
-
+    // Get initial position
     useEffect(() => {
-        // Get initial position
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
@@ -44,7 +93,6 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
             }
         );
 
-        // Watch position changes
         const watchId = navigator.geolocation.watchPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
@@ -88,95 +136,80 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
         }
     }, [socket, showCaptain]);
 
-    // Calculate route if needed
+    // Fetch route between pickup and destination using the free OSRM demo server
     useEffect(() => {
-        if (showRoute && ride && isLoaded && window.google) {
-            const directionsService = new window.google.maps.DirectionsService();
+        const fetchRoute = async () => {
+            if (!showRoute || !ride?.pickup || !ride?.destination) {
+                setRouteCoordinates(null);
+                return;
+            }
 
-            directionsService.route(
-                {
-                    origin: ride.pickup,
-                    destination: ride.destination,
-                    travelMode: window.google.maps.TravelMode.DRIVING,
-                },
-                (result, status) => {
-                    if (status === window.google.maps.DirectionsStatus.OK) {
-                        setDirections(result);
-                    } else {
-                        console.error('Directions request failed:', status);
-                    }
+            try {
+                const token = localStorage.getItem('token');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+                const [pickupResponse, destinationResponse] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_API_URL}/maps/get-coordinates`, {
+                        params: { address: ride.pickup },
+                        headers
+                    }),
+                    axios.get(`${import.meta.env.VITE_API_URL}/maps/get-coordinates`, {
+                        params: { address: ride.destination },
+                        headers
+                    })
+                ]);
+
+                const pickupCoords = pickupResponse.data; // { ltd, lng }
+                const destinationCoords = destinationResponse.data; // { ltd, lng }
+
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${pickupCoords.lng},${pickupCoords.ltd};${destinationCoords.lng},${destinationCoords.ltd}?overview=full&geometries=geojson`;
+
+                const response = await fetch(osrmUrl);
+                const data = await response.json();
+                const coordinates = data?.routes?.[0]?.geometry?.coordinates;
+
+                if (coordinates) {
+                    // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
+                    setRouteCoordinates(coordinates.map(coordinate => [coordinate[1], coordinate[0]]));
+                } else {
+                    console.error('❌ No route found');
+                    setRouteCoordinates(null);
                 }
-            );
-        }
-    }, [showRoute, ride, isLoaded]);
+            } catch (error) {
+                console.error('❌ Error fetching route:', error);
+                setRouteCoordinates(null);
+            }
+        };
+
+        fetchRoute();
+    }, [showRoute, ride]);
 
     if (loadError) {
         return <MapFallback error={loadError} />;
     }
 
-    if (!isLoaded) {
+    if (!currentPosition || typeof currentPosition.lat !== 'number') {
         return <MapFallback loading={true} />;
     }
 
     return (
-        <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={currentPosition}
+        <MapContainer
+            center={[currentPosition.lat, currentPosition.lng]}
             zoom={15}
-            options={{
-                zoomControl: true,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false,
-            }}
+            style={containerStyle}
         >
-            {/* User location marker */}
-            <MarkerF
-                position={currentPosition}
-                icon={{
-                    path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-                    scale: 8,
-                    fillColor: '#4285F4',
-                    fillOpacity: 1,
-                    strokeColor: '#ffffff',
-                    strokeWeight: 2,
-                }}
-                title="Your Location"
+            <TileLayer
+                attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-
-            {/* Captain location marker */}
-            {showCaptain && captainPosition && (
-                <MarkerF
-                    position={captainPosition}
-                    icon={{
-                        path: window.google?.maps?.SymbolPath?.FORWARD_CLOSED_ARROW || 0,
-                        scale: 6,
-                        fillColor: '#10B981',
-                        fillOpacity: 1,
-                        strokeColor: '#ffffff',
-                        strokeWeight: 2,
-                        rotation: 0,
-                    }}
-                    title="Captain Location"
-                />
-            )}
-
-            {/* Route directions */}
-            {showRoute && directions && (
-                <DirectionsRenderer
-                    directions={directions}
-                    options={{
-                        suppressMarkers: false,
-                        polylineOptions: {
-                            strokeColor: '#4285F4',
-                            strokeWeight: 4,
-                            strokeOpacity: 0.8,
-                        },
-                    }}
-                />
-            )}
-        </GoogleMap>
-    )
-}
+            <TrackingMap
+                currentPosition={currentPosition}
+                captainPosition={captainPosition}
+                showCaptain={showCaptain}
+                routeCoordinates={routeCoordinates}
+            />
+        </MapContainer>
+    );
+};
 
 export default LiveTracking

@@ -59,27 +59,6 @@ module.exports.getAutoCompleteSuggestions = async (req, res, next) => {
         console.error('❌ Controller error:', err.message);
 
         // Provide more specific error messages
-        if (err.message.includes('API key')) {
-            return res.status(500).json({
-                message: 'Google Maps API configuration error',
-                error: 'API_KEY_ERROR'
-            });
-        }
-
-        if (err.message.includes('OVER_QUERY_LIMIT')) {
-            return res.status(429).json({
-                message: 'Google Maps API quota exceeded',
-                error: 'QUOTA_EXCEEDED'
-            });
-        }
-
-        if (err.message.includes('REQUEST_DENIED')) {
-            return res.status(403).json({
-                message: 'Google Maps API request denied',
-                error: 'REQUEST_DENIED'
-            });
-        }
-
         res.status(500).json({
             message: 'Unable to fetch suggestions',
             error: 'INTERNAL_ERROR'

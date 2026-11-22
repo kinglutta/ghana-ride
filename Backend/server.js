@@ -124,7 +124,6 @@ io.on('connection', (socket) => {
 // Validate environment variables on startup
 const validateEnvironment = () => {
     const requiredVars = ['MONGODB_URL', 'JWT_SECRET'];
-    const optionalVars = ['GOOGLE_MAPS_API_KEY'];
 
     console.log('🔍 Validating environment variables...');
 
@@ -133,15 +132,6 @@ const validateEnvironment = () => {
         if (!process.env[varName]) {
             console.error(`❌ Missing required environment variable: ${varName}`);
             process.exit(1);
-        } else {
-            console.log(`✅ ${varName}: configured`);
-        }
-    }
-
-    // Check optional variables
-    for (const varName of optionalVars) {
-        if (!process.env[varName]) {
-            console.warn(`⚠️ Missing optional environment variable: ${varName} - Maps features will not work`);
         } else {
             console.log(`✅ ${varName}: configured`);
         }

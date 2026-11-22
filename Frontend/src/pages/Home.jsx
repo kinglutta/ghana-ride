@@ -251,7 +251,7 @@ const Home = () => {
         <div className='h-screen relative overflow-hidden'>
             {/* Header with logo and user avatar */}
             <div className='absolute left-5 top-5 z-10'>
-                <img className='w-16' src={logo} alt="Uber Logo" />
+                <img className='w-16' src={logo} alt="YENKO Logo" />
             </div>
             <div className='absolute right-5 top-5 z-10'>
                 <img

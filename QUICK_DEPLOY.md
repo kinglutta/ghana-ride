@@ -6,7 +6,7 @@
 
 - [ ] Code pushed to GitHub
 - [ ] MongoDB Atlas account created
-- [ ] Google Maps API key obtained
+- [ ] OpenStreetMap account not required (free services used)
 - [ ] Render account created
 - [ ] Vercel account created
 
@@ -42,7 +42,6 @@
    PORT=3000
    MONGODB_URL=mongodb+srv://uber_admin:PASSWORD@cluster.mongodb.net/uber-clone
    JWT_SECRET=your-32-character-secret-key-here
-   GOOGLE_MAPS_API_KEY=your-google-maps-key
    ```
 
 5. **Deploy** → Wait 5-10 minutes
@@ -63,7 +62,6 @@
 4. **Environment Variables**:
    ```
    VITE_API_URL=https://your-backend-app.onrender.com
-   VITE_GOOGLE_MAPS_API_KEY=your-google-maps-key
    ```
 
 5. **Deploy** → Wait 2-5 minutes

@@ -13,8 +13,8 @@ The following sensitive information has been removed from the repository:
    - Connection string with username/password
    - Database URL with authentication
 
-2. **Google Maps API Key**
-   - Production API key for Google Maps services
+2. **Map Service API Keys**
+   - Previously used map service API keys (no longer required - free OpenStreetMap services are used)
 
 3. **JWT Secret Key**
    - Authentication secret used for token signing
@@ -39,9 +39,9 @@ If you are using this repository:
    - Never commit `.env` files
 
 3. **Secure Your API Keys**
-   - Restrict Google Maps API key to specific domains/IPs
+   - No map service API key is needed anymore - the application uses free OpenStreetMap services
    - Use environment variables in production
-   - Enable API key restrictions in Google Cloud Console
+   - Enable API key restrictions in the respective service dashboards (if any API keys are used)
 
 ### Security Best Practices
 

@@ -49,7 +49,7 @@ const LocationSearchPanel = (props) => {
                             </h2>
                             <div className='flex flex-col'>
                                 <h4 className='font-medium text-base'>{suggestion}</h4>
-                                <p className='text-sm text-gray-600'>Google Maps suggestion</p>
+                                <p className='text-sm text-gray-600'>Location suggestion</p>
                             </div>
                         </div>
                     ))}

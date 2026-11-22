@@ -6,7 +6,7 @@ const MapFallback = ({ error = null, loading = false }) => {
             <div className="flex items-center justify-center h-full bg-gray-100">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading Google Maps...</p>
+                    <p className="text-gray-600">Loading map...</p>
                 </div>
             </div>
         )
@@ -19,7 +19,7 @@ const MapFallback = ({ error = null, loading = false }) => {
                     <div className="text-red-500 text-4xl mb-4">⚠️</div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">Map Unavailable</h3>
                     <p className="text-gray-600 mb-4">
-                        Unable to load Google Maps. Please check your internet connection.
+                        Unable to load the map. Please check your internet connection.
                     </p>
                     <button 
                         onClick={() => window.location.reload()} 

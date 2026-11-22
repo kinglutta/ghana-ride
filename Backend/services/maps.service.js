@@ -1,35 +1,37 @@
 const axios = require('axios');
 const captainModel = require('../models/captain.model');
 
+const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
+const OSRM_BASE_URL = 'https://router.project-osrm.org/route/v1/driving';
+
+// Free geocoding via OpenStreetMap Nominatim (no API key required)
 module.exports.getAddressCoordinate = async (address) => {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-
-    if (!apiKey) {
-        console.error('❌ GOOGLE_MAPS_API_KEY is not configured');
-        throw new Error('Google Maps API key is not configured');
+    if (!address) {
+        throw new Error('Address is required');
     }
 
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    const url = `${NOMINATIM_BASE_URL}/search`;
+    const response = await axios.get(url, {
+        params: {
+            format: 'json',
+            limit: 1,
+            q: address
+        },
+        headers: {
+            'User-Agent': 'YENKO RIDE'
+        },
+        timeout: 10000
+    });
 
-    try {
-        console.log('🗺️ Fetching coordinates for address:', address);
-        const response = await axios.get(url);
-
-        if (response.data.status === 'OK') {
-            const location = response.data.results[0].geometry.location;
-            console.log('✅ Coordinates found:', location);
-            return {
-                ltd: location.lat,
-                lng: location.lng
-            };
-        } else {
-            console.error('❌ Google Maps API error:', response.data.status, response.data.error_message);
-            throw new Error(`Google Maps API error: ${response.data.status}`);
-        }
-    } catch (error) {
-        console.error('❌ Error fetching coordinates:', error.message);
-        throw error;
+    if (response.data && response.data.length > 0) {
+        const location = response.data[0];
+        return {
+            ltd: parseFloat(location.lat),
+            lng: parseFloat(location.lon)
+        };
     }
+
+    throw new Error('Address not found');
 }
 
 module.exports.getDistanceTime = async (origin, destination) => {
@@ -37,36 +39,29 @@ module.exports.getDistanceTime = async (origin, destination) => {
         throw new Error('Origin and destination are required');
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    // Geocode the addresses to coordinates using free Nominatim service
+    const pickupCoords = await module.exports.getAddressCoordinate(origin);
+    const destinationCoords = await module.exports.getAddressCoordinate(destination);
 
-    if (!apiKey) {
-        console.error('❌ GOOGLE_MAPS_API_KEY is not configured');
-        throw new Error('Google Maps API key is not configured');
-    }
+    const osrmUrl = `${OSRM_BASE_URL}/${pickupCoords.lng},${pickupCoords.ltd};${destinationCoords.lng},${destinationCoords.ltd}?overview=false`;
 
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
+    const response = await axios.get(osrmUrl, {
+        timeout: 10000
+    });
 
-    try {
-        console.log('🗺️ Fetching distance/time from:', origin, 'to:', destination);
-        const response = await axios.get(url);
-
-        if (response.data.status === 'OK') {
-            if (response.data.rows[0].elements[0].status === 'ZERO_RESULTS') {
-                console.error('❌ No routes found between locations');
-                throw new Error('No routes found');
+    if (response.data && response.data.code === 'Ok' && response.data.routes && response.data.routes.length > 0) {
+        const route = response.data.routes[0];
+        return {
+            distance: {
+                value: route.distance // in meters
+            },
+            duration: {
+                value: route.duration // in seconds
             }
-
-            console.log('✅ Distance/time calculated successfully');
-            return response.data.rows[0].elements[0];
-        } else {
-            console.error('❌ Google Maps API error:', response.data.status, response.data.error_message);
-            throw new Error(`Google Maps API error: ${response.data.status}`);
-        }
-
-    } catch (err) {
-        console.error('❌ Error fetching distance/time:', err.message);
-        throw err;
+        };
     }
+
+    throw new Error('No routes found');
 }
 
 module.exports.getAutoCompleteSuggestions = async (input) => {
@@ -74,63 +69,28 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
         throw new Error('query is required');
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const url = `${NOMINATIM_BASE_URL}/search`;
+    const response = await axios.get(url, {
+        params: {
+            format: 'json',
+            limit: 5,
+            q: input
+        },
+        headers: {
+            'User-Agent': 'YENKO RIDE'
+        },
+        timeout: 10000
+    });
 
-    if (!apiKey) {
-        console.warn('⚠️ GOOGLE_MAPS_API_KEY is not configured - returning mock suggestions');
-        // Return mock suggestions when API key is missing
-        return [
-            `${input} - Mumbai, Maharashtra, India`,
-            `${input} - Delhi, India`,
-            `${input} - Bangalore, Karnataka, India`,
-            `${input} - Pune, Maharashtra, India`,
-            `${input} - Chennai, Tamil Nadu, India`
-        ].slice(0, 3); // Return top 3 mock suggestions
+    const suggestions = (response.data || [])
+        .map(item => item.display_name)
+        .filter(value => value);
+
+    if (suggestions.length === 0) {
+        throw new Error('No suggestions found');
     }
 
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
-
-    try {
-        console.log('🗺️ Fetching autocomplete suggestions for:', input);
-        const response = await axios.get(url);
-
-        if (response.data.status === 'OK') {
-            const suggestions = response.data.predictions.map(prediction => prediction.description).filter(value => value);
-            console.log('✅ Found', suggestions.length, 'suggestions');
-            return suggestions;
-        } else {
-            console.error('❌ Google Maps API error:', response.data.status, response.data.error_message);
-
-            // Return fallback suggestions on API error
-            if (response.data.status === 'OVER_QUERY_LIMIT' || response.data.status === 'REQUEST_DENIED') {
-                console.warn('⚠️ API quota/permission issue - returning fallback suggestions');
-                return [
-                    `${input} - Mumbai, Maharashtra, India`,
-                    `${input} - Delhi, India`,
-                    `${input} - Bangalore, Karnataka, India`
-                ];
-            }
-
-            throw new Error(`Google Maps API error: ${response.data.status}`);
-        }
-    } catch (err) {
-        console.error('❌ Error fetching suggestions:', err.message);
-        if (err.response) {
-            console.error('❌ API Response:', err.response.status, err.response.data);
-        }
-
-        // Return fallback suggestions on network error
-        if (err.code === 'ECONNABORTED' || err.code === 'ENOTFOUND') {
-            console.warn('⚠️ Network error - returning fallback suggestions');
-            return [
-                `${input} - Mumbai, Maharashtra, India`,
-                `${input} - Delhi, India`,
-                `${input} - Bangalore, Karnataka, India`
-            ];
-        }
-
-        throw err;
-    }
+    return suggestions;
 }
 
 module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
