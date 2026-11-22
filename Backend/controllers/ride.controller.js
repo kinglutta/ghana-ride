@@ -2,6 +2,7 @@ const rideService = require('../services/ride.service');
 const { validationResult } = require('express-validator');
 const mapService = require('../services/maps.service');
 const rideModel = require('../models/ride.model');
+const captainModel = require('../models/captain.model');
 
 
 module.exports.createRide = async (req, res) => {
@@ -205,3 +206,89 @@ module.exports.endRide = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 }
+
+/**
+ * Rate a completed ride (rider -> driver rating).
+ * Updates ride rating and captain's average rating.
+ */
+module.exports.rateRide = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { rideId, rating, comment } = req.body;
+
+    try {
+        const ride = await rideModel.findById(rideId)
+            .populate('user')
+            .populate('captain');
+
+        if (!ride) {
+            return res.status(404).json({ message: 'Ride not found' });
+        }
+
+        if (ride.user._id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to rate this ride' });
+        }
+
+        if (ride.status !== 'completed') {
+            return res.status(400).json({ message: 'Can only rate completed rides' });
+        }
+
+        if (ride.rating) {
+            return res.status(400).json({ message: 'Ride already rated' });
+        }
+
+        ride.rating = rating;
+        ride.comment = comment || '';
+        ride.paymentStatus = 'paid';
+        await ride.save();
+
+        // Update captain's average rating and total rides
+        const captain = await captainModel.findById(ride.captain._id);
+        const totalRides = captain.totalRides + 1;
+        const newRating = ((captain.rating * captain.totalRides) + rating) / totalRides;
+
+        captain.rating = Math.round(newRating * 10) / 10;
+        captain.totalRides = totalRides;
+        captain.earnings = (captain.earnings || 0) + ride.fare;
+        await captain.save();
+
+        // Notify captain via socket
+        const io = req.app.get('io');
+        if (io && captain.socketId) {
+            io.to(captain.socketId).emit('ride-rated', {
+                rideId,
+                rating,
+                comment,
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Ride rated successfully',
+            rating: captain.rating,
+            totalRides: captain.totalRides,
+        });
+    } catch (err) {
+        console.error('❌ Error rating ride:', err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+/**
+ * Get ride history for the authenticated user.
+ */
+module.exports.getRideHistory = async (req, res) => {
+    try {
+        const rides = await rideModel.find({ user: req.user._id })
+            .populate('captain', 'fullname vehicle rating')
+            .sort({ createdAt: -1 })
+            .limit(50);
+
+        return res.status(200).json(rides);
+    } catch (err) {
+        console.error('❌ Error fetching ride history:', err);
+        return res.status(500).json({ message: err.message });
+    }
+};

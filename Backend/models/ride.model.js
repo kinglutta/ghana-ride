@@ -53,6 +53,36 @@ const rideSchema = new mongoose.Schema({
         select: false,
         required: true,
     },
-})
+
+    // Driver rating from rider (1-5)
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+    },
+
+    // Rider comment (optional)
+    comment: {
+        type: String,
+        maxlength: 500,
+    },
+
+    // Payment status: 'pending' | 'paid' | 'cash' | 'failed'
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'cash', 'failed'],
+        default: 'cash',
+    },
+
+    // Timestamps
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
+}, { timestamps: true });
 
 module.exports = mongoose.model('ride', rideSchema);

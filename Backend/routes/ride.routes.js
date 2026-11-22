@@ -39,6 +39,19 @@ router.post('/end-ride',
     rideController.endRide
 )
 
+router.post('/rate',
+    authMiddleware.authUser,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
+    body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+    body('comment').optional().isString().isLength({ max: 500 }).withMessage('Comment too long'),
+    rideController.rateRide
+)
+
+router.get('/history',
+    authMiddleware.authUser,
+    rideController.getRideHistory
+)
+
 
 
 module.exports = router;

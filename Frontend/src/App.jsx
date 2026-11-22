@@ -13,6 +13,8 @@ import CaptainLogout from './pages/CaptainLogout'
 import CaptainHome from './pages/CaptainHome'
 import CaptainRiding from './pages/CaptainRiding'
 import Riding from './pages/Riding'
+import RideHistory from './pages/RideHistory'
+import AdminDashboard from './pages/AdminDashboard'
 import SocketStatus from './components/SocketStatus'
 
 const App = () => {
@@ -53,6 +55,16 @@ const App = () => {
         <Route path='/riding' element={
           <UserProtectedWrapper>
             <Riding />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/ride-history' element={
+          <UserProtectedWrapper>
+            <RideHistory />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/admin' element={
+          <UserProtectedWrapper>
+            <AdminDashboard />
           </UserProtectedWrapper>
         } />
       </Routes>

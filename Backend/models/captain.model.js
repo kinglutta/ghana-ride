@@ -66,7 +66,27 @@ const captainSchema = new mongoose.Schema({
         lng: {
             type: Number,
         }
-    }
+    },
+
+    // Driver rating from riders (1-5)
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: 5,
+    },
+
+    // Total completed rides
+    totalRides: {
+        type: Number,
+        default: 0,
+    },
+
+    // Total earnings in GH₵
+    earnings: {
+        type: Number,
+        default: 0,
+    },
 })
 
 // Create geospatial index for location-based queries
