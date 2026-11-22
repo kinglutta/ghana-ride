@@ -58,11 +58,8 @@ module.exports.createRide = async (req, res) => {
 
                 if (captainsInRadius.length === 0) {
                     console.log('⚠️ No captains available in the area');
-                    // You could emit back to user that no captains are available
-                    return res.status(200).json({
-                        ...ride.toObject(),
-                        message: 'Ride created but no captains available in your area'
-                    });
+                    // Don't send another response — ride was already created with 201 above
+                    console.log('📡 Ride created but no captains available in your area');
                 }
 
                 // Send ride request to each captain in radius individually

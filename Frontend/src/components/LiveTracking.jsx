@@ -36,12 +36,12 @@ const TrackingMap = ({ currentPosition, captainPosition, showCaptain, routeCoord
             {/* Route between pickup and destination */}
             {routeCoordinates && (
                 <Polyline
-                    path={routeCoordinates}
+                    positions={routeCoordinates}
                     lineCap="round"
                     lineJoin="round"
                     pathOptions={{
-                        strokeColor: '#3b82f6',
-                        strokeWeight: 5,
+                        color: '#3b82f6',
+                        weight: 5,
                         opacity: 0.8
                     }}
                 />
