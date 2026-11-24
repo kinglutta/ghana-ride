@@ -1,5 +1,5 @@
 /**
- * DriverEarnings — Captain earnings dashboard
+ * DriverEarnings â€” Captain earnings dashboard
  * Yango-standard driver earnings with payout requests
  */
 
@@ -20,12 +20,12 @@ const DriverEarnings = () => {
         status: 'inactive',
     });
     const [payouts, setPayouts] = useState([]);
-    [payoutAmount, setPayoutAmount] = useState('');
-    [payoutProvider, setPayoutProvider] = useState('mtn_momo');
-    [payoutPhone, setPayoutPhone] = useState('');
-    [providers, setProviders] = useState([]);
-    [loading, setLoading] = useState(false);
-    [message, setMessage] = useState('');
+    const [payoutAmount, setPayoutAmount] = useState('');
+    const [payoutProvider, setPayoutProvider] = useState('mtn_momo');
+    const [payoutPhone, setPayoutPhone] = useState('');
+    const [providers, setProviders] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         fetchEarnings();
@@ -104,13 +104,13 @@ const DriverEarnings = () => {
             <div className="max-w-5xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">💰 Driver Earnings</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">ðŸ’° Driver Earnings</h1>
                         <p className="text-gray-600">Track your rides and request payouts</p>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         earnings.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                     }`}>
-                        {earnings.status === 'active' ? '🟢 Online' : '⚪ Offline'}
+                        {earnings.status === 'active' ? 'ðŸŸ¢ Online' : 'âšª Offline'}
                     </div>
                 </div>
 
@@ -142,7 +142,7 @@ const DriverEarnings = () => {
                             <div>
                                 <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Driver Rating</div>
                                 <div className="text-2xl font-bold text-gray-900 flex items-center gap-1">
-                                    {earnings.rating} <span className="text-yellow-500">★</span>
+                                    {earnings.rating} <span className="text-yellow-500">â˜…</span>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -156,13 +156,13 @@ const DriverEarnings = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Request Payout */}
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6">💸 Request Payout</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-6">ðŸ’¸ Request Payout</h3>
                         <p className="text-sm text-gray-500 mb-4">
-                            Withdraw your earnings to Mobile Money. Minimum payout: GH₵1. Fee: 1% (min GH₵1).
+                            Withdraw your earnings to Mobile Money. Minimum payout: GHâ‚µ1. Fee: 1% (min GHâ‚µ1).
                         </p>
                         <form onSubmit={handleRequestPayout} className="space-y-4">
                             <InputField
-                                label="Amount (GH₵)"
+                                label="Amount (GHâ‚µ)"
                                 type="number"
                                 value={payoutAmount}
                                 onChange={(e) => setPayoutAmount(e.target.value)}
@@ -218,10 +218,10 @@ const DriverEarnings = () => {
 
                     {/* Payout History */}
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Payout History</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ“‹ Payout History</h3>
                         {payouts.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
-                                <div className="text-gray-300 text-2xl mb-2">💳</div>
+                                <div className="text-gray-300 text-2xl mb-2">ðŸ’³</div>
                                 <p>No payouts yet</p>
                                 <p className="text-xs text-gray-400 mt-2">Request your first payout above</p>
                             </div>
@@ -242,14 +242,14 @@ const DriverEarnings = () => {
                                                         : 'bg-red-100 text-red-600'
                                                 }`}
                                             >
-                                                {p.status === 'completed' ? '✅' : p.status === 'pending' ? '⏳' : '❌'}
+                                                {p.status === 'completed' ? 'âœ…' : p.status === 'pending' ? 'â³' : 'âŒ'}
                                             </div>
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900">
                                                     Payout #{p._id.slice(-6)}
                                                 </div>
                                                 <div className="text-xs text-gray-500">
-                                                    {p.provider} • {new Date(p.createdAt).toLocaleDateString()}
+                                                    {p.provider} â€¢ {new Date(p.createdAt).toLocaleDateString()}
                                                 </div>
                                             </div>
                                         </div>

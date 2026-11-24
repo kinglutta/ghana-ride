@@ -23,6 +23,7 @@ import Referral from './pages/Referral'
 import Notifications from './pages/Notifications'
 import Chat from './pages/Chat'
 import DriverVerification from './pages/DriverVerification'
+import Disputes from './pages/Disputes'
 import SocketStatus from './components/SocketStatus'
 
 const App = () => {
@@ -116,8 +117,13 @@ const App = () => {
           </UserProtectedWrapper>
         } />
         <Route path='/driver-verification' element={
-          <UserProtectedWrapper>
+          <CaptainProtectedWrapper>
             <DriverVerification />
+          </CaptainProtectedWrapper>
+        } />
+        <Route path='/disputes' element={
+          <UserProtectedWrapper>
+            <Disputes />
           </UserProtectedWrapper>
         } />
       </Routes>

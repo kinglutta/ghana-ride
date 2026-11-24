@@ -1,7 +1,7 @@
 /**
- * SafetyPage — Yango-standard safety features
+ * SafetyPage â€” Yango-standard safety features
  * SOS button, emergency contacts, trip sharing
- * Safety first — always visible, always accessible
+ * Safety first â€” always visible, always accessible
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,13 +13,14 @@ import InputField from '../components/ui/InputField';
 
 const SafetyPage = ({ navigate, ride }) => {
     const [contacts, setContacts] = useState([]);
-    [newContactName, setNewContactName] = useState('');
-    [newContactPhone, setNewContactPhone] = useState('');
-    [newContactRelation, setNewContactRelation] = useState('Emergency Contact');
-    [sosActive, setSosActive] = useState(false);
-    [sosLoading, setSosLoading] = useState(false);
-    [message, setMessage] = useState('');
-    [sosMessage, setSosMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [newContactName, setNewContactName] = useState('');
+    const [newContactPhone, setNewContactPhone] = useState('');
+    const [newContactRelation, setNewContactRelation] = useState('Emergency Contact');
+    const [sosActive, setSosActive] = useState(false);
+    const [sosLoading, setSosLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [sosMessage, setSosMessage] = useState('');
 
     const { socket } = useContext(SocketContext);
 
@@ -28,6 +29,7 @@ const SafetyPage = ({ navigate, ride }) => {
     }, []);
 
     const fetchContacts = async () => {
+        setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/safety/contacts`, {
@@ -36,6 +38,8 @@ const SafetyPage = ({ navigate, ride }) => {
             setContacts(res.data);
         } catch (err) {
             console.error('Error fetching contacts:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -118,7 +122,7 @@ const SafetyPage = ({ navigate, ride }) => {
                 }
             },
             (error) => {
-                setSosMessage('Location access denied — SOS needs location');
+                setSosMessage('Location access denied â€” SOS needs location');
                 setSosLoading(false);
             },
             { enableHighAccuracy: true, timeout: 10000 }
@@ -136,12 +140,12 @@ const SafetyPage = ({ navigate, ride }) => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">🛡️ Safety</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">ðŸ›¡ï¸ Safety</h1>
                         <p className="text-gray-600">Your safety is our priority</p>
                     </div>
                 </div>
 
-                {/* SOS Button — Prominent, always accessible */}
+                {/* SOS Button â€” Prominent, always accessible */}
                 <div className="mb-8">
                     <button
                         onClick={handleSOS}
@@ -153,7 +157,7 @@ const SafetyPage = ({ navigate, ride }) => {
                         }`}
                     >
                         <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-red-600">
-                            {!sosActive ? '🚨' : '✅'}
+                            {!sosActive ? 'ðŸš¨' : 'âœ…'}
                         </div>
                         <div>
                             {sosActive ? (
@@ -193,7 +197,7 @@ const SafetyPage = ({ navigate, ride }) => {
                     {/* Emergency Contacts */}
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-gray-900">📞 Emergency Contacts</h3>
+                            <h3 className="text-lg font-bold text-gray-900">ðŸ“ž Emergency Contacts</h3>
                             <span
                                 className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                     contacts.length > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
@@ -205,7 +209,7 @@ const SafetyPage = ({ navigate, ride }) => {
 
                         {contacts.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
-                                <div className="text-gray-300 text-2xl mb-2">📭</div>
+                                <div className="text-gray-300 text-2xl mb-2">ðŸ“­</div>
                                 <p>No emergency contacts yet</p>
                                 <p className="text-xs text-gray-400 mt-2">Add contacts who will be notified during SOS</p>
                             </div>
@@ -223,7 +227,7 @@ const SafetyPage = ({ navigate, ride }) => {
                                             <div>
                                                 <div className="text-sm font-semibold text-gray-900">{contact.name}</div>
                                                 <div className="text-xs text-gray-500">
-                                                    {contact.relationship} • {contact.phoneNumber}
+                                                    {contact.relationship} â€¢ {contact.phoneNumber}
                                                 </div>
                                             </div>
                                         </div>
@@ -231,7 +235,7 @@ const SafetyPage = ({ navigate, ride }) => {
                                             onClick={() => handleRemoveContact(contact._id)}
                                             className="text-gray-400 hover:text-red-500"
                                         >
-                                            🗑️
+                                            ðŸ—‘ï¸
                                         </button>
                                     </div>
                                 ))}
@@ -267,7 +271,7 @@ const SafetyPage = ({ navigate, ride }) => {
 
                     {/* Safety Info */}
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">🛡️ How SOS Works</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ›¡ï¸ How SOS Works</h3>
                         <div className="space-y-4">
                             <div className="flex gap-3">
                                 <div className="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-lg">1</div>
@@ -293,7 +297,7 @@ const SafetyPage = ({ navigate, ride }) => {
                         </div>
 
                         <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                            <h4 className="font-bold text-amber-800 mb-2">⚡ Quick Tips</h4>
+                            <h4 className="font-bold text-amber-800 mb-2">âš¡ Quick Tips</h4>
                             <ul className="text-sm text-amber-700 space-y-1 list-disc list-inside">
                                 <li>Add at least one primary emergency contact</li>
                                 <li>Keep location permissions enabled</li>

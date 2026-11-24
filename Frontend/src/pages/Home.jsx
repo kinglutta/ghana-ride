@@ -303,6 +303,13 @@ const Home = () => {
                 >
                     📅
                 </button>
+                <button
+                    onClick={() => navigate('/disputes')}
+                    className='w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors'
+                    title='Disputes & Support'
+                >
+                    ❓
+                </button>
                 <img
                     className='h-12 w-12 rounded-full object-cover border-2 border-white shadow-lg bg-white'
                     src={generateUserAvatar(user)}

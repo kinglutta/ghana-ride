@@ -1,6 +1,6 @@
-/* YENKO PWA service worker — offline app shell caching (100% free, no Workbox needed) */
+/* YENKO PWA service worker — offline app shell (100% free, no Workbox needed) */
 
-const CACHE_NAME = 'yenko-v1';
+const CACHE_NAME = 'yenko-v2';
 const APP_SHELL = [
     '/',
     '/index.html',
@@ -27,19 +27,25 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     if (request.method !== 'GET') return;
 
-    // Only cache same-origin requests (API calls must always hit network)
     const url = new URL(request.url);
     if (url.origin !== self.location.origin) return;
 
+    const isAppShell = APP_SHELL.includes(url.pathname) || request.mode === 'navigate';
+    const isHashedAsset = url.pathname.startsWith('/assets/');
+
+    // Never cache dev modules, API calls, or anything else outside the app shell / built assets.
+    if (!isAppShell && !isHashedAsset) return;
+
+    // Network-first: deployed updates take effect immediately; cached copy is an offline fallback.
     event.respondWith(
-        caches.match(request).then(
-            (cached) =>
-                cached ||
-                fetch(request).then((response) => {
+        fetch(request)
+            .then((response) => {
+                if (response.ok && response.type === 'basic') {
                     const copy = response.clone();
                     caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-                    return response;
-                })
-        )
+                }
+                return response;
+            })
+            .catch(() => caches.match(request).then((cached) => cached || (isAppShell ? caches.match('/index.html') : undefined)))
     );
 });

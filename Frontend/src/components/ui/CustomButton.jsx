@@ -45,6 +45,8 @@ const CustomButton = ({
     children,
     ...props
 }) => {
+    // `loading` is a UI-state prop used by callers; never forward it to <button>.
+    delete props.loading;
     return (
         <button
             onClick={onPress}

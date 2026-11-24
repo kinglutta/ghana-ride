@@ -15,6 +15,8 @@ const InputField = ({
     className = '',
     ...props
 }) => {
+    // `loading` is a UI-state prop used by callers; never forward it to <input>.
+    delete props.loading;
     return (
         <div className={`w-full mb-4 ${className}`}>
             {label && (

@@ -1,7 +1,7 @@
 /**
- * PaymentPage — Mobile Money + Wallet payment hub
+ * PaymentPage â€” Mobile Money + Wallet payment hub
  * Yango-standard payment experience for Ghana market
- * 100% free — no Stripe, no paid gateways
+ * 100% free â€” no Stripe, no paid gateways
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,13 +17,13 @@ const PaymentPage = ({ navigate }) => {
     const [wallet, setWallet] = useState({ balance: 0, currency: 'GHS' });
     const [transactions, setTransactions] = useState([]);
     const [topupAmount, setTopupAmount] = useState('');
-    [selectedProvider, setSelectedProvider] = useState('mtn_momo');
+    const [selectedProvider, setSelectedProvider] = useState('mtn_momo');
     const [topupPhone, setTopupPhone] = useState('');
-    [rideToPay, setRideToPay] = useState(null);
-    [paymentMethod, setPaymentMethod] = useState('wallet');
-    [payPhone, setPayPhone] = useState('');
-    [loading, setLoading] = useState(false);
-    [message, setMessage] = useState('');
+    const [rideToPay, setRideToPay] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState('wallet');
+    const [payPhone, setPayPhone] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
 
     const { socket } = useContext(SocketContext);
 
@@ -141,7 +141,7 @@ const PaymentPage = ({ navigate }) => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">💳 Payment</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">ðŸ’³ Payment</h1>
                         <p className="text-gray-600">Wallet, Mobile Money &amp; Ride Payments</p>
                     </div>
                     {message && (
@@ -170,10 +170,10 @@ const PaymentPage = ({ navigate }) => {
                     {/* Left: Top Up */}
                     <div className="lg:col-span-1 space-y-6">
                         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">📲 Top Up Wallet</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ“² Top Up Wallet</h3>
                             <form onSubmit={handleTopup} className="space-y-4">
                                 <InputField
-                                    label="Amount (GH₵)"
+                                    label="Amount (GHâ‚µ)"
                                     type="number"
                                     value={topupAmount}
                                     onChange={(e) => setTopupAmount(e.target.value)}
@@ -217,10 +217,10 @@ const PaymentPage = ({ navigate }) => {
                     {/* Right: Transaction History */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Transaction History</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ“‹ Transaction History</h3>
                             {transactions.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
-                                    <div className="text-gray-300 text-2xl mb-2">💰</div>
+                                    <div className="text-gray-300 text-2xl mb-2">ðŸ’°</div>
                                     <p>No transactions yet</p>
                                 </div>
                             ) : (
@@ -237,14 +237,14 @@ const PaymentPage = ({ navigate }) => {
                                                             : 'bg-gray-100 text-gray-600'
                                                     }`}
                                                 >
-                                                    {tx.type === 'topup' ? '💰' : tx.type === 'ride_payment' ? '🚗' : '🔄'}
+                                                    {tx.type === 'topup' ? 'ðŸ’°' : tx.type === 'ride_payment' ? 'ðŸš—' : 'ðŸ”„'}
                                                 </div>
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900">
                                                         {tx.type === 'topup' ? 'Wallet Top-up' : tx.type === 'ride_payment' ? 'Ride Payment' : tx.type}
                                                     </div>
                                                     <div className="text-xs text-gray-500">
-                                                        {tx.provider} • {new Date(tx.createdAt).toLocaleDateString()}
+                                                        {tx.provider} â€¢ {new Date(tx.createdAt).toLocaleDateString()}
                                                     </div>
                                                 </div>
                                             </div>
@@ -269,11 +269,11 @@ const PaymentPage = ({ navigate }) => {
                 {/* Ride Payment Modal/Section */}
                 {rideToPay && (
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xl mt-8">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">💳 Pay for Ride</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ’³ Pay for Ride</h3>
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-6">
                             <div>
                                 <p className="text-sm text-gray-500 uppercase">Route</p>
-                                <p className="font-medium text-gray-900">{rideToPay.pickup} → {rideToPay.destination}</p>
+                                <p className="font-medium text-gray-900">{rideToPay.pickup} â†’ {rideToPay.destination}</p>
                                 <p className="text-xs text-gray-500">Ride #{rideToPay._id.slice(-6)}</p>
                             </div>
                             <div className="text-right">
@@ -294,7 +294,7 @@ const PaymentPage = ({ navigate }) => {
                                                 : 'bg-white border-gray-300 text-gray-600'
                                         }`}
                                     >
-                                        💰 Wallet ({formatFare(wallet.balance)})
+                                        ðŸ’° Wallet ({formatFare(wallet.balance)})
                                     </button>
                                     <button
                                         type="button"
@@ -305,7 +305,7 @@ const PaymentPage = ({ navigate }) => {
                                                 : 'bg-white border-gray-300 text-gray-600'
                                         }`}
                                     >
-                                        💵 Cash
+                                        ðŸ’µ Cash
                                     </button>
                                 </div>
                             </div>

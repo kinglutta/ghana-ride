@@ -25,7 +25,7 @@ const NOTIFICATION_CONFIG = {
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchNotifications();
@@ -101,11 +101,6 @@ const Notifications = () => {
         return `${diffDays}d ago`;
     };
 
-    const getBadgeClass = (type) => {
-        const config = getConfig(type);
-        return `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.color.replace('text-', 'bg-')}-100`;
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -143,7 +138,6 @@ const Notifications = () => {
                     <div className="space-y-3">
                         {notifications.map((notification) => {
                             const config = getConfig(notification.type);
-                            const badgeClass = getBadgeClass(notification.type);
                             return (
                                 <div
                                     key={notification._id}

@@ -1,5 +1,5 @@
 /**
- * ScheduledRide — book rides for a future date/time
+ * ScheduledRide â€” book rides for a future date/time
  * Yango-standard scheduled ride experience
  */
 
@@ -19,14 +19,14 @@ const ScheduledRide = () => {
     const [scheduledTime, setScheduledTime] = useState('');
     const [fare, setFare] = useState(null);
     const [loading, setLoading] = useState(false);
-    [message, setMessage] = useState('');
+    const [message, setMessage] = useState('');
 
     const VEHICLE_CONFIG = {
-        car: { name: 'YenkoGo', icon: '🚗', seats: 4 },
-        bike: { name: 'YenkoBike', icon: '🏍️', seats: 1 },
-        auto: { name: 'YenkoAuto', icon: '🛺', seats: 3 },
-        comfort: { name: 'YenkoComfort', icon: '✨', seats: 4 },
-        xl: { name: 'YenkoXL', icon: '🚙', seats: 6 },
+        car: { name: 'YenkoGo', icon: 'ðŸš—', seats: 4 },
+        bike: { name: 'YenkoBike', icon: 'ðŸï¸', seats: 1 },
+        auto: { name: 'YenkoAuto', icon: 'ðŸ›º', seats: 3 },
+        comfort: { name: 'YenkoComfort', icon: 'âœ¨', seats: 4 },
+        xl: { name: 'YenkoXL', icon: 'ðŸš™', seats: 6 },
     };
 
     // Default to tomorrow at 9am
@@ -143,7 +143,7 @@ const ScheduledRide = () => {
             <div className="max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">📅 Schedule a Ride</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">ðŸ“… Schedule a Ride</h1>
                         <p className="text-gray-600">Book your ride in advance</p>
                     </div>
                     {message && (

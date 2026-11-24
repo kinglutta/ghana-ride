@@ -36,7 +36,11 @@ const DriverVerification = () => {
             });
             setVerification(res.data);
         } catch (err) {
-            console.error('Error fetching verification:', err);
+            if (err.response?.status === 401) {
+                setError('A captain account is required to submit verification documents.');
+            } else {
+                setError('Unable to load verification status. Please try again.');
+            }
         }
     };
 

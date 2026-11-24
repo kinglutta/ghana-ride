@@ -50,7 +50,7 @@ const TrackingMap = ({ currentPosition, captainPosition, showCaptain, routeCoord
 
             {/* User location marker */}
             <CircleMarker
-                position={[currentPosition.lat, currentPosition.lng]}
+                center={[currentPosition.lat, currentPosition.lng]}
                 pathOptions={{
                     color: '#3b82f6',
                     fillColor: '#3b82f6',

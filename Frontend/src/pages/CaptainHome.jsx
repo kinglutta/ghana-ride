@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import CaptainDetails from '../components/CaptainDetails'
 import RidePopUp from '../components/RidePopUp'
 import { useGSAP } from '@gsap/react'
@@ -16,6 +16,7 @@ import homepageCover from '../assets/homepage-cover.jpg'
 
 const CaptainHome = () => {
 
+    const navigate = useNavigate()
     const [ridePopupPanel, setRidePopupPanel] = useState(false)
     const [confirmRidePopupPanel, setConfirmRidePopupPanel] = useState(false)
 
@@ -306,7 +307,10 @@ const CaptainHome = () => {
                             e.target.src = generateCaptainAvatar({ fullname: { firstname: 'Captain' } });
                         }}
                     />
-                    <Link to='/captain-home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full'>
+                    <Link to='/driver-verification' title='Driver Verification' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full'>
+                        <i className="text-lg font-medium ri-shield-check-line"></i>
+                    </Link>
+                    <Link to='/captains/logout' title='Logout' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full'>
                         <i className="text-lg font-medium ri-logout-box-r-line"></i>
                     </Link>
                 </div>
