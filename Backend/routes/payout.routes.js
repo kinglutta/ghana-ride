@@ -26,13 +26,13 @@ router.get(
 // Admin routes
 router.get(
     '/all',
-    authMiddleware.authUser,
+    authMiddleware.authAdmin,
     payoutController.getAllPayoutRequests
 );
 
 router.patch(
     '/:id/process',
-    authMiddleware.authUser,
+    authMiddleware.authAdmin,
     payoutController.processPayout
 );
 

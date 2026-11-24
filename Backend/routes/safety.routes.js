@@ -31,10 +31,11 @@ router.post(
 // Admin routes
 router.get(
     '/alerts',
-    authMiddleware.authUser,
+    authMiddleware.authAdmin,
     safetyController.getSOSAlerts
 );
 
+// The owner of an alert (or an admin) can resolve it.
 router.patch(
     '/alerts/:id/resolve',
     authMiddleware.authUser,

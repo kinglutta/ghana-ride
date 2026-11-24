@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const driverVerificationController = require('../controllers/driverVerification.controller');
 const authCaptain = require('../middlewares/auth.middlewares').authCaptain;
-const authUser = require('../middlewares/auth.middlewares').authUser;
+const authAdmin = require('../middlewares/auth.middlewares').authAdmin;
 const { body } = require('express-validator');
 
 router.post(
@@ -21,13 +21,13 @@ router.get(
 // Admin routes
 router.get(
     '/pending',
-    authUser,
+    authAdmin,
     driverVerificationController.getPendingVerifications
 );
 
 router.patch(
     '/:id/review',
-    authUser,
+    authAdmin,
     body('status').isIn(['approved', 'rejected']),
     driverVerificationController.reviewVerification
 );

@@ -1,6 +1,11 @@
 const rideModel = require('../models/ride.model');
 const captainModel = require('../models/captain.model');
 const userModel = require('../models/user.model');
+const { SOSAlert } = require('../models/payment.models');
+const DriverVerification = require('../models/driverVerification.model');
+const PayoutRequest = require('../models/payout.model');
+const Dispute = require('../models/dispute.model');
+const ScheduledRide = require('../models/scheduledRide.model');
 
 /**
  * GET /admin/stats
@@ -161,6 +166,94 @@ module.exports.getRevenueByVehicle = async (req, res) => {
         return res.status(200).json(byVehicle);
     } catch (err) {
         console.error('❌ Error fetching revenue by vehicle:', err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+/**
+ * GET /admin/operations
+ * One request that powers the admin command centre: live queues that need a human.
+ */
+module.exports.getOperations = async (req, res) => {
+    try {
+        const [
+            activeRides,
+            pendingRides,
+            activeCaptains,
+            activeSos,
+            pendingVerification,
+            pendingPayouts,
+            openDisputes,
+            upcomingScheduled,
+        ] = await Promise.all([
+            rideModel.countDocuments({ status: 'ongoing' }),
+            rideModel.countDocuments({ status: 'pending' }),
+            captainModel.countDocuments({ status: 'active' }),
+            SOSAlert.find({ status: 'active' })
+                .populate('user', 'fullname email phoneNumber')
+                .sort({ createdAt: -1 })
+                .limit(20)
+                .lean(),
+            DriverVerification.find({ status: 'pending' })
+                .populate('captain', 'fullname email vehicle')
+                .sort({ createdAt: 1 })
+                .limit(20)
+                .lean(),
+            PayoutRequest.find({ status: 'pending' })
+                .populate('captain', 'fullname email')
+                .sort({ createdAt: 1 })
+                .limit(20)
+                .lean(),
+            Dispute.find({ status: 'open' })
+                .populate('ride', 'pickup destination fare status')
+                .sort({ createdAt: -1 })
+                .limit(20)
+                .lean(),
+            ScheduledRide.find({
+                status: 'scheduled',
+                scheduledAt: { $gte: new Date() },
+            })
+                .sort({ scheduledAt: 1 })
+                .limit(20)
+                .lean(),
+        ]);
+
+        return res.status(200).json({
+            counts: {
+                activeRides,
+                pendingRides,
+                activeCaptains,
+                activeSos: activeSos.length,
+                pendingVerification: pendingVerification.length,
+                pendingPayouts: pendingPayouts.length,
+                openDisputes: openDisputes.length,
+                upcomingScheduled: upcomingScheduled.length,
+            },
+            queues: { activeSos, pendingVerification, pendingPayouts, openDisputes, upcomingScheduled },
+            generatedAt: new Date().toISOString(),
+        });
+    } catch (err) {
+        console.error('❌ Error fetching admin operations:', err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+/** GET /admin/captains/locations — captain pins for the live fleet map. */
+module.exports.getCaptainLocations = async (req, res) => {
+    try {
+        const captains = await captainModel.find({
+            status: 'active',
+            'location.ltd': { $exists: true },
+            'location.lng': { $exists: true },
+        })
+            .select('fullname vehicle status location rating isVerified')
+            .sort({ updatedAt: -1 })
+            .limit(200)
+            .lean();
+
+        return res.status(200).json(captains);
+    } catch (err) {
+        console.error('❌ Error fetching captain locations:', err);
         return res.status(500).json({ message: err.message });
     }
 };

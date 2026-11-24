@@ -176,18 +176,34 @@ module.exports.getSOSAlerts = async (req, res) => {
 
 /**
  * PATCH /api/safety/alerts/:id/resolve
- * Resolve SOS alert (admin)
+ * Resolve SOS alert (the rider who raised it, or an admin)
  */
 module.exports.resolveSOSAlert = async (req, res) => {
     try {
-        const alert = await SOSAlert.findByIdAndUpdate(
-            req.params.id,
-            { status: 'resolved', resolvedAt: new Date(), resolvedBy: req.user._id },
-            { new: true }
-        );
+        const alert = await SOSAlert.findById(req.params.id);
         if (!alert) {
             return res.status(404).json({ message: 'Alert not found' });
         }
+
+        const isOwner = String(alert.user) === String(req.user._id);
+        if (!isOwner && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Forbidden - Cannot resolve this alert' });
+        }
+
+        alert.status = 'resolved';
+        alert.resolvedAt = new Date();
+        alert.resolvedBy = req.user._id;
+        await alert.save();
+
+        const io = req.app.get('io');
+        if (io) {
+            io.to('admin').emit('sos-resolved', {
+                alertId: alert._id,
+                resolvedBy: req.user._id,
+                resolvedAt: alert.resolvedAt,
+            });
+        }
+
         return res.status(200).json({ message: 'SOS alert resolved', alert });
     } catch (err) {
         console.error('❌ Error resolving alert:', err);

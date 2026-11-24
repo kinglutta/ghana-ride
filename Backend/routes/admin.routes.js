@@ -3,36 +3,16 @@ const router = express.Router();
 const adminController = require('../controllers/admin.controller');
 const authMiddleware = require('../middlewares/auth.middlewares');
 
-// Admin-only middleware placeholder: reuse authUser for now.
-// In production, add a role check (req.user.role === 'admin').
-router.get('/stats',
-    authMiddleware.authUser,
-    adminController.getStats
-)
+// All fleet-operations endpoints require an authenticated admin account.
+router.use(authMiddleware.authAdmin);
 
-router.get('/rides/recent',
-    authMiddleware.authUser,
-    adminController.getRecentRides
-)
-
-router.get('/captains',
-    authMiddleware.authUser,
-    adminController.getCaptains
-)
-
-router.get('/analytics/overview',
-    authMiddleware.authUser,
-    adminController.getAnalyticsOverview
-)
-
-router.get('/analytics/daily-rides',
-    authMiddleware.authUser,
-    adminController.getDailyRides
-)
-
-router.get('/analytics/revenue-by-vehicle',
-    authMiddleware.authUser,
-    adminController.getRevenueByVehicle
-)
+router.get('/stats', adminController.getStats);
+router.get('/rides/recent', adminController.getRecentRides);
+router.get('/captains', adminController.getCaptains);
+router.get('/captains/locations', adminController.getCaptainLocations);
+router.get('/operations', adminController.getOperations);
+router.get('/analytics/overview', adminController.getAnalyticsOverview);
+router.get('/analytics/daily-rides', adminController.getDailyRides);
+router.get('/analytics/revenue-by-vehicle', adminController.getRevenueByVehicle);
 
 module.exports = router;

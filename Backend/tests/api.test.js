@@ -79,6 +79,20 @@ describe('YENKO RIDE API', () => {
         assert.ok(typeof health.data.uptime === 'number');
     });
 
+    it('allows browser PATCH requests through CORS', async () => {
+        // Regression: admin queue actions and SOS resolution use axios.patch.
+        const response = await fetch(`${baseUrl}/safety/alerts/unknown/resolve`, {
+            method: 'OPTIONS',
+            headers: {
+                Origin: 'http://localhost:5173',
+                'Access-Control-Request-Method': 'PATCH',
+                'Access-Control-Request-Headers': 'content-type,authorization',
+            },
+        });
+        const allowed = response.headers.get('access-control-allow-methods') || '';
+        assert.match(allowed, /PATCH/);
+    });
+
     it('validates rider registration input', async () => {
         const res = await api('/users/register', {
             method: 'POST',
@@ -141,6 +155,14 @@ describe('YENKO RIDE API', () => {
 
         const profile = await api('/captains/profile', { token: state.captainToken });
         assert.equal(profile.status, 200);
+    });
+
+    it('returns a captain earnings summary without crashing', async () => {
+        // Regression: getEarningsSummary used Ride without importing the model.
+        const res = await api('/payout/earnings', { token: state.captainToken });
+        assert.equal(res.status, 200, JSON.stringify(res.data));
+        assert.equal(typeof res.data.completedRides, 'number');
+        assert.equal(typeof res.data.totalEarnings, 'number');
     });
 
     it('returns a numeric notifications unread count', async () => {
@@ -206,5 +228,39 @@ describe('YENKO RIDE API', () => {
         const mine = await api('/disputes/my', { token: state.riderToken });
         assert.equal(mine.status, 200);
         assert.ok(Array.isArray(mine.data));
+    });
+
+    it('blocks non-admin riders from the fleet command centre', async () => {
+        const stats = await api('/admin/stats', { token: state.riderToken });
+        assert.equal(stats.status, 403);
+        assert.match(stats.data.message, /Admin access required/);
+
+        const operations = await api('/admin/operations', { token: state.riderToken });
+        assert.equal(operations.status, 403);
+
+        const reviews = await api('/driver-verification/pending', { token: state.riderToken });
+        assert.equal(reviews.status, 403);
+        const payouts = await api('/payout/all', { token: state.riderToken });
+        assert.equal(payouts.status, 403);
+        const alerts = await api('/safety/alerts', { token: state.riderToken });
+        assert.equal(alerts.status, 403);
+    });
+
+    it('serves live operations and captain locations to an admin', async () => {
+        const userModel = require('../models/user.model');
+        await userModel.updateOne({ email: state.riderEmail }, { $set: { role: 'admin' } });
+
+        const stats = await api('/admin/stats', { token: state.riderToken });
+        assert.equal(stats.status, 200, JSON.stringify(stats.data));
+
+        const operations = await api('/admin/operations', { token: state.riderToken });
+        assert.equal(operations.status, 200, JSON.stringify(operations.data));
+        assert.ok(operations.data.counts);
+        assert.ok(operations.data.queues);
+        assert.equal(typeof operations.data.counts.activeRides, 'number');
+
+        const locations = await api('/admin/captains/locations', { token: state.riderToken });
+        assert.equal(locations.status, 200);
+        assert.ok(Array.isArray(locations.data));
     });
 });

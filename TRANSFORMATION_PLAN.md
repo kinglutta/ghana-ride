@@ -71,4 +71,4 @@ A 100% free-stack ride-hailing platform that sets a new standard for the Ghana/A
 3. **Transparent Pricing** — Fare shown before booking, surge clearly marked
 4. **Driver Respect** — Earnings visible, payout requests easy, ratings fair
 5. **Works on Weak Networks** — Optimized for 3G, PWA for offline resilience
-6. **Zero API Costs** — No paid maps, no Stripe, no paid auth
+6. **Zero API Costs** — No paid maps, no paid payment gateways, no paid auth

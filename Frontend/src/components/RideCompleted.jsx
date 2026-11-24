@@ -1,32 +1,43 @@
 import React, { useState } from 'react'
+import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
+import RateRideModal from './RateRideModal'
+import { formatFare } from '../lib/mapUtils'
 
 const RideCompleted = ({ ride, onClose }) => {
     const navigate = useNavigate()
     const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+    const [showRating, setShowRating] = useState(false)
+    const [notice, setNotice] = useState('')
 
     const handlePayment = async () => {
+        if (!ride?._id) {
+            setNotice('Ride reference is unavailable. Pay from the Payments page.')
+            return
+        }
+
         setIsProcessingPayment(true)
+        setNotice('')
         try {
-            // Simulate payment processing
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            // In a real app, this would integrate with payment gateway
-            alert('Payment processed successfully! Thank you for riding with us.')
-            onClose()
-            navigate('/home')
+            const token = localStorage.getItem('token')
+            const res = await axios.post(
+                `${import.meta.env.VITE_API_URL}/payment/pay-ride`,
+                { rideId: ride._id, method: 'wallet' },
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
+            setNotice(res.data.message || 'Ride paid from wallet.')
+            setShowRating(true)
         } catch (error) {
-            console.error('Payment error:', error)
-            alert('Payment failed. Please try again.')
+            setNotice(error.response?.data?.message || 'Payment failed. Try the Payments page.')
         } finally {
             setIsProcessingPayment(false)
         }
     }
 
     const handlePayLater = () => {
-        alert('Payment will be processed later. Thank you for riding with us.')
+        navigate('/payment')
         onClose()
-        navigate('/home')
     }
 
     return (
@@ -168,14 +179,32 @@ const RideCompleted = ({ ride, onClose }) => {
                     >
                         Pay Later
                     </button>
+                    {notice && <p className='text-center text-xs font-semibold text-ink'>{notice}</p>}
+                    {ride?._id && (
+                        <button
+                            onClick={() => setShowRating(true)}
+                            className='w-full rounded-lg border border-yenko py-3 text-sm font-bold text-ink'
+                        >
+                            ★ Rate your Captain
+                        </button>
+                    )}
                 </div>
 
                 <div className='mt-4 text-center'>
                     <p className='text-xs text-gray-500'>
-                        Payment is secure and encrypted. You can also pay cash to the driver.
+                        {formatFare(ride?.fare || 0)} · Cash and Mobile Money options are in Payments.
                     </p>
                 </div>
             </div>
+
+            {showRating && (
+                <RateRideModal
+                    rideId={ride._id}
+                    captainName={ride?.captain?.fullname?.firstname || 'your YENKO Captain'}
+                    onClose={() => setShowRating(false)}
+                    onRated={() => setNotice('Thanks for the feedback!')}
+                />
+            )}
         </div>
     )
 }

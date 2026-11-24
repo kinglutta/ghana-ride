@@ -153,5 +153,26 @@ module.exports.authCaptain = async (req, res, next) => {
     }
 }
 
+/**
+ * Admin authorization. Runs the normal user auth first, then checks the
+ * explicit role (or an ADMIN_EMAILS allow-list for existing deployments).
+ */
+module.exports.authAdmin = async (req, res, next) => {
+    module.exports.authUser(req, res, () => {
+        const allowList = (process.env.ADMIN_EMAILS || '')
+            .split(',')
+            .map((email) => email.trim().toLowerCase())
+            .filter(Boolean);
+
+        const isAdmin = req.user.role === 'admin' || allowList.includes(String(req.user.email || '').toLowerCase());
+
+        if (!isAdmin) {
+            return res.status(403).json({ message: 'Forbidden - Admin access required' });
+        }
+
+        return next();
+    });
+};
+
 
 

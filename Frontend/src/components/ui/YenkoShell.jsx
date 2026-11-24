@@ -36,6 +36,11 @@ export const PageFooter = () => (
         <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
             <span className="font-semibold tracking-wide text-gray-700">YENKO RIDE</span>
             <span>Move smarter, Ghana · Maps by OpenStreetMap · Routing by OSRM</span>
+            <span className='flex flex-wrap gap-3 font-semibold'>
+                <Link to='/rider' className='hover:text-ink'>Rider App</Link>
+                <Link to='/driver' className='hover:text-ink'>Captain App</Link>
+                <Link to='/admin' className='hover:text-ink'>Admin</Link>
+            </span>
             <span>© {new Date().getFullYear()} YENKO</span>
         </div>
     </footer>

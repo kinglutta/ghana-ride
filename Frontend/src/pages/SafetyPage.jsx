@@ -18,6 +18,7 @@ const SafetyPage = ({ ride }) => {
     const [newContactPhone, setNewContactPhone] = useState('');
     const [newContactRelation, setNewContactRelation] = useState('Emergency Contact');
     const [sosActive, setSosActive] = useState(false);
+    const [activeAlertId, setActiveAlertId] = useState(null);
     const [sosLoading, setSosLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [sosMessage, setSosMessage] = useState('');
@@ -106,6 +107,7 @@ const SafetyPage = ({ ride }) => {
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                     setSosActive(true);
+                    setActiveAlertId(res.data.alert?._id || null);
                     setSosMessage(res.data.message);
                     // Broadcast via socket
                     if (socket) {
@@ -129,9 +131,26 @@ const SafetyPage = ({ ride }) => {
         );
     };
 
-    const resolveSOS = () => {
-        setSosActive(false);
-        setSosMessage('');
+    const resolveSOS = async () => {
+        if (!activeAlertId) {
+            setSosActive(false);
+            setSosMessage('');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.patch(
+                `${import.meta.env.VITE_API_URL}/safety/alerts/${activeAlertId}/resolve`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSosActive(false);
+            setActiveAlertId(null);
+            setSosMessage('SOS resolved. YENKO operations has been notified.');
+        } catch (err) {
+            setSosMessage(err.response?.data?.message || 'Could not resolve the SOS alert.');
+        }
     };
 
     return (

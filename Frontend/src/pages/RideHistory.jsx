@@ -6,34 +6,34 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { formatTime, formatFare } from '../lib/mapUtils';
 import CustomButton from '../components/ui/CustomButton';
+import RateRideModal from '../components/RateRideModal';
 
 const RideHistory = () => {
     const [rides, setRides] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [ratingRide, setRatingRide] = useState(null);
+    const navigate = useNavigate();
+
+    const fetchRides = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/rides/history`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setRides(response.data || []);
+        } catch (err) {
+            setError(err.message || 'Failed to load ride history');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchRides = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/rides/history`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-                setRides(response.data || []);
-            } catch (err) {
-                setError(err.message || 'Failed to load ride history');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchRides();
     }, []);
 
@@ -68,9 +68,7 @@ const RideHistory = () => {
                 <CustomButton
                     title="Book a Ride"
                     bgVariant="outline"
-                    onClick={() => {
-                        // navigate to home handled by router in parent
-                    }}
+                    onClick={() => navigate('/home')}
                 />
             </div>
         );
@@ -126,10 +124,35 @@ const RideHistory = () => {
                                     <span>{ride.rating}</span>
                                 </div>
                             )}
+                            <div className="flex gap-2 pt-1">
+                                {ride.status === 'completed' && !ride.rating && (
+                                    <button
+                                        onClick={() => setRatingRide(ride)}
+                                        className="rounded-lg bg-yenko px-3 py-1.5 text-xs font-bold text-ink"
+                                    >
+                                        Rate Captain
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => navigate(`/chat/${ride._id}`)}
+                                    className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700"
+                                >
+                                    Chat
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {ratingRide && (
+                <RateRideModal
+                    rideId={ratingRide._id}
+                    captainName={ratingRide.captain?.fullname?.firstname || 'your Captain'}
+                    onClose={() => setRatingRide(null)}
+                    onRated={fetchRides}
+                />
+            )}
         </div>
     );
 };

@@ -3,6 +3,7 @@ import Start from './pages/Start'
 import { Routes, Route } from 'react-router-dom'
 import UserProtectedWrapper from './pages/UserProtectedWrapper'
 import CaptainProtectedWrapper from './pages/CaptainProtectedWrapper'
+import AdminProtectedWrapper from './pages/AdminProtectedWrapper'
 import SocketStatus from './components/SocketStatus'
 import YenkoShell from './components/ui/YenkoShell'
 import AuthGateMessage from './components/ui/AuthGateMessage'
@@ -25,6 +26,9 @@ const PaymentPage = lazy(() => import('./pages/PaymentPage'))
 const SafetyPage = lazy(() => import('./pages/SafetyPage'))
 const DriverEarnings = lazy(() => import('./pages/DriverEarnings'))
 const ScheduledRide = lazy(() => import('./pages/ScheduledRide'))
+const ScheduledRides = lazy(() => import('./pages/ScheduledRides'))
+const RiderApp = lazy(() => import('./pages/RiderApp'))
+const DriverApp = lazy(() => import('./pages/DriverApp'))
 const Referral = lazy(() => import('./pages/Referral'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Chat = lazy(() => import('./pages/Chat'))
@@ -57,6 +61,11 @@ const App = () => {
           <Route path='/signup' element={<Titled title="Join YENKO"><UserSignup /></Titled>} />
           <Route path='/captain-login' element={<Titled title="Captain Login"><CaptainLogin /></Titled>} />
           <Route path='/captain-signup' element={<Titled title="Become a Captain"><CaptainSignup /></Titled>} />
+          <Route path='/rider' element={
+            <UserProtectedWrapper>
+              <RiderApp />
+            </UserProtectedWrapper>
+          } />
           <Route path='/home' element={
             <UserProtectedWrapper>
               <Titled title="Book a Ride"><Home /></Titled>
@@ -66,6 +75,11 @@ const App = () => {
             <UserProtectedWrapper>
               <Titled title="Signing Out"><UserLogout /></Titled>
             </UserProtectedWrapper>
+          } />
+          <Route path='/driver' element={
+            <CaptainProtectedWrapper>
+              <DriverApp />
+            </CaptainProtectedWrapper>
           } />
           <Route path='/captain-home' element={
             <CaptainProtectedWrapper>
@@ -93,9 +107,9 @@ const App = () => {
             </UserProtectedWrapper>
           } />
           <Route path='/admin' element={
-            <UserProtectedWrapper>
-              <Feature title="Fleet Dashboard"><AdminDashboard /></Feature>
-            </UserProtectedWrapper>
+            <AdminProtectedWrapper>
+              <AdminDashboard />
+            </AdminProtectedWrapper>
           } />
           <Route path='/payment' element={
             <UserProtectedWrapper>
@@ -119,7 +133,7 @@ const App = () => {
           } />
           <Route path='/scheduled-rides/my-rides' element={
             <UserProtectedWrapper>
-              <Feature title="My Scheduled Rides"><RideHistory /></Feature>
+              <ScheduledRides />
             </UserProtectedWrapper>
           } />
           <Route path='/referrals' element={

@@ -48,7 +48,7 @@ console.log('Frontend URL:', process.env.FRONTEND_URL);
 const io = socketIo(server, {
     cors: {
         origin: allowedOrigins,
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         credentials: false,
         allowedHeaders: ['Content-Type', 'Authorization'],
     },
@@ -85,6 +85,13 @@ io.on('connection', (socket) => {
 
         socket.emit('join-confirmed', { userType, userId, socketId: socket.id });
 
+        // Alias used by the captain home screen; keeps the old listener working.
+        socket.emit('connection-confirmed', { userType, userId, socketId: socket.id });
+
+        if (userType === 'admin') {
+            socket.join('admin');
+        }
+
         if (userType === 'captain') {
             socket.emit('test-captain-connection', { message: 'Captain connection successful!' });
         }
@@ -109,6 +116,27 @@ io.on('connection', (socket) => {
 
     socket.on('ride-declined', (data) => {
         console.log('Ride declined by captain:', data);
+        socket.to('user').emit('ride-declined', data);
+    });
+
+    socket.on('ride-paid', (data) => {
+        // PaymentPage emits this after a successful REST payment.
+        socket.to('user').emit('ride-paid', data);
+        socket.to('captain').emit('ride-paid', data);
+    });
+
+    socket.on('new-chat-message', (data) => {
+        // Chat messages are persisted over REST; Socket.IO only delivers them live.
+        socket.to('user').emit('new-chat-message', data);
+        socket.to('captain').emit('new-chat-message', data);
+    });
+
+    socket.on('sos-activated', (data) => {
+        socket.to('admin').emit('sos-alert', data);
+    });
+
+    socket.on('sos-resolved', (data) => {
+        socket.to('admin').emit('sos-resolved', data);
     });
 
     socket.on('disconnect', () => {

@@ -1,7 +1,7 @@
 /**
  * PaymentPage — Mobile Money + Wallet payment hub
  * YENKO-standard payment experience for Ghana market
- * 100% free — no Stripe, no paid gateways
+ * 100% free — no paid payment gateways
  */
 
 import React, { useState, useEffect } from 'react';
@@ -16,6 +16,7 @@ const PaymentPage = () => {
     const [providers, setProviders] = useState([]);
     const [wallet, setWallet] = useState({ balance: 0, currency: 'GHS' });
     const [transactions, setTransactions] = useState([]);
+    const [unpaidRides, setUnpaidRides] = useState([]);
     const [topupAmount, setTopupAmount] = useState('');
     const [selectedProvider, setSelectedProvider] = useState('mtn_momo');
     const [topupPhone, setTopupPhone] = useState('');
@@ -31,6 +32,7 @@ const PaymentPage = () => {
         fetchProviders();
         fetchWallet();
         fetchTransactions();
+        fetchUnpaidRides();
     }, []);
 
     const fetchProviders = async () => {
@@ -67,6 +69,31 @@ const PaymentPage = () => {
         } catch (err) {
             console.error('Error fetching transactions:', err);
         }
+    };
+
+    const fetchUnpaidRides = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/rides/history`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUnpaidRides(
+                (res.data || []).filter(
+                    (ride) =>
+                        ride.status === 'completed' &&
+                        !['paid', 'cash'].includes(ride.paymentStatus)
+                )
+            );
+        } catch (err) {
+            console.error('Error fetching unpaid rides:', err);
+        }
+    };
+
+    const selectRideToPay = (ride) => {
+        setRideToPay(ride);
+        setPaymentMethod('wallet');
+        setPayPhone('');
+        setMessage('');
     };
 
     const handleTopup = async (e) => {
@@ -119,6 +146,7 @@ const PaymentPage = () => {
             setPayPhone('');
             fetchWallet();
             fetchTransactions();
+            fetchUnpaidRides();
             // Notify via socket if payment completed
             if (socket && res.data.transaction) {
                 socket.emit('ride-paid', { rideId: rideToPay._id, transaction: res.data.transaction });
@@ -261,6 +289,34 @@ const PaymentPage = () => {
                     </div>
                 </div>
 
+                {/* Outstanding rides */}
+                {unpaidRides.length > 0 && (
+                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mt-8">
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">🚗 Unpaid rides</h3>
+                        <p className="text-xs text-gray-500 mb-4">Choose a trip to settle with wallet, Mobile Money or cash.</p>
+                        <div className="space-y-3">
+                            {unpaidRides.map((ride) => (
+                                <div key={ride._id} className="flex flex-wrap items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium text-gray-900">{ride.pickup} → {ride.destination}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {new Date(ride.createdAt).toLocaleDateString()} · {ride.paymentStatus || 'pending'}
+                                        </p>
+                                    </div>
+                                    <p className="font-bold text-gray-900">{formatFare(ride.fare)}</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => selectRideToPay(ride)}
+                                        className="rounded-lg bg-[#f5c400] px-4 py-2 text-xs font-bold text-[#111] hover:brightness-95"
+                                    >
+                                        Pay now
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Ride Payment Modal/Section */}
                 {rideToPay && (
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xl mt-8">
@@ -302,6 +358,20 @@ const PaymentPage = () => {
                                     >
                                         💵 Cash
                                     </button>
+                                    {providers.map((provider) => (
+                                        <button
+                                            key={provider.id}
+                                            type="button"
+                                            onClick={() => setPaymentMethod(provider.id)}
+                                            className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                                                paymentMethod === provider.id
+                                                    ? 'bg-yellow-50 border-yellow-300 text-yellow-700'
+                                                    : 'bg-white border-gray-300 text-gray-600'
+                                            }`}
+                                        >
+                                            📱 {provider.name}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                             {(paymentMethod === 'mtn_momo' || paymentMethod === 'vodafone_cash' || paymentMethod === 'airtel_tigo_money') && (
@@ -316,8 +386,20 @@ const PaymentPage = () => {
                             <CustomButton
                                 title="Confirm Payment"
                                 loading={loading}
-                                disabled={loading || (paymentMethod !== 'cash' && !payPhone)}
+                                disabled={
+                                    loading ||
+                                    (paymentMethod !== 'cash' &&
+                                        paymentMethod !== 'wallet' &&
+                                        !payPhone)
+                                }
                             />
+                            <button
+                                type="button"
+                                onClick={() => setRideToPay(null)}
+                                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-gray-800"
+                            >
+                                Cancel
+                            </button>
                         </form>
                     </div>
                 )}

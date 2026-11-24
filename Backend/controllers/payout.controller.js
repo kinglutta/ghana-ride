@@ -1,5 +1,6 @@
 const PayoutRequest = require('../models/payout.model');
 const Captain = require('../models/captain.model');
+const Ride = require('../models/ride.model');
 const { Wallet, PaymentTransaction } = require('../models/payment.models');
 const { validationResult } = require('express-validator');
 const { body } = require('express-validator');

@@ -3,6 +3,7 @@ const router = express.Router();
 const disputeController = require('../controllers/dispute.controller');
 const authUser = require('../middlewares/auth.middlewares').authUser;
 const authCaptain = require('../middlewares/auth.middlewares').authCaptain;
+const authAdmin = require('../middlewares/auth.middlewares').authAdmin;
 const { body } = require('express-validator');
 
 router.post(
@@ -29,13 +30,13 @@ router.get(
 // Admin routes
 router.get(
     '/all',
-    authUser,
+    authAdmin,
     disputeController.getAllDisputes
 );
 
 router.patch(
     '/:id/resolve',
-    authUser,
+    authAdmin,
     body('resolution').isIn(['refund', 'credit', 'no_action', 'compensate']),
     disputeController.resolveDispute
 );

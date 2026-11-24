@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         select: false,
     },
+    // Rider accounts are the default. Admin accounts are seeded explicitly.
+    role: {
+        type: String,
+        enum: [ 'rider', 'admin' ],
+        default: 'rider',
+    },
     socketId: {
         type: String,
     },
