@@ -274,7 +274,7 @@ error.log
 access.log
 
 # ===================================
-# Uber Clone - Application Specific
+# YENKO RIDE - Application Specific
 # ===================================
 
 # Frontend specific (React/Vite)
@@ -283,19 +283,21 @@ Frontend/build/
 Frontend/.vite/
 Frontend/node_modules/
 Frontend/.env*
+!Frontend/.env.example
 
 # Backend specific (Node.js/Express)
 Backend/dist/
 Backend/build/
 Backend/node_modules/
 Backend/.env*
+!Backend/.env.example
 Backend/uploads/
 Backend/temp/
 
 # Socket.IO specific
 socket.io-client/
 
-# Google Maps API cache
+# Map tile cache (OSM)
 .maps-cache/
 
 # Ride data exports

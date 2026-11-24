@@ -52,7 +52,7 @@ connectToDb();
 // Health check endpoint
 app.get('/', (req, res) => {
     res.status(200).json({
-        message: 'Uber Clone Backend API is running!',
+        message: 'YENKO RIDE API is running!',
         status: 'healthy',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development',
@@ -85,4 +85,4 @@ app.use('/chat', chatRoutes);
 app.use('/driver-verification', driverVerificationRoutes);
 app.use('/disputes', disputeRoutes);
 
-module.exports = app;// Force redeploy Fri, May 30, 2025  2:17:46 AM
+module.exports = app;

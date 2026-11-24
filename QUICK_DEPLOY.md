@@ -1,133 +1,14 @@
-# ⚡ Quick Deployment Checklist
+# YENKO RIDE — Quick Deploy Checklist
 
-## 🚀 Ready to Deploy in 15 Minutes!
+Full instructions: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
 
-### ✅ Pre-Deployment Checklist
+- [ ] Code pushed to `origin/main`
+- [ ] MongoDB Atlas cluster created; user added; network access `0.0.0.0/0`
+- [ ] Backend deployed to Render (`Backend/` root; `render.yaml` or dashboard)
+- [ ] Render env vars: `NODE_ENV`, `PORT`, `MONGODB_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `FRONTEND_URL`
+- [ ] Frontend deployed to Vercel (`Frontend/` root; Vite preset)
+- [ ] Vercel env var: `VITE_API_URL=https://<your-backend>.onrender.com`
+- [ ] `GET /health` returns `{"status":"healthy"}`
+- [ ] Register/login, book a ride, wallet top-up, SOS, analytics all verified
 
-- [ ] Code pushed to GitHub
-- [ ] MongoDB Atlas account created
-- [ ] OpenStreetMap account not required (free services used)
-- [ ] Render account created
-- [ ] Vercel account created
-
----
-
-## 🗄️ 1. MongoDB Atlas (5 minutes)
-
-1. **Create Account**: [mongodb.com/atlas](https://www.mongodb.com/atlas)
-2. **Create Cluster**: Choose M0 (Free) → Name: "uber-clone"
-3. **Create User**: Username: `uber_admin`, Password: (save it!)
-4. **Network Access**: Allow 0.0.0.0/0 (anywhere)
-5. **Get Connection String**: 
-   ```
-   mongodb+srv://uber_admin:PASSWORD@cluster.mongodb.net/uber-clone
-   ```
-
----
-
-## 🔧 2. Deploy Backend to Render (5 minutes)
-
-1. **Go to**: [render.com](https://render.com)
-2. **New Web Service** → Connect GitHub repo
-3. **Settings**:
-   - Name: `uber-clone-backend`
-   - Environment: Node
-   - Root Directory: `Backend`
-   - Build: `npm install`
-   - Start: `npm start`
-
-4. **Environment Variables**:
-   ```
-   NODE_ENV=production
-   PORT=3000
-   MONGODB_URL=mongodb+srv://uber_admin:PASSWORD@cluster.mongodb.net/uber-clone
-   JWT_SECRET=your-32-character-secret-key-here
-   ```
-
-5. **Deploy** → Wait 5-10 minutes
-6. **Save URL**: `https://your-app.onrender.com`
-
----
-
-## 🎨 3. Deploy Frontend to Vercel (3 minutes)
-
-1. **Go to**: [vercel.com](https://vercel.com)
-2. **New Project** → Import GitHub repo
-3. **Settings**:
-   - Framework: Vite
-   - Root Directory: `Frontend`
-   - Build: `npm run build`
-   - Output: `dist`
-
-4. **Environment Variables**:
-   ```
-   VITE_API_URL=https://your-backend-app.onrender.com
-   ```
-
-5. **Deploy** → Wait 2-5 minutes
-6. **Save URL**: `https://your-app.vercel.app`
-
----
-
-## 🔄 4. Update Backend CORS (2 minutes)
-
-1. **Go back to Render**
-2. **Add Environment Variable**:
-   ```
-   FRONTEND_URL=https://your-app.vercel.app
-   ```
-3. **Auto-redeploys**
-
----
-
-## ✅ 5. Test Everything
-
-### Backend Test:
-Visit: `https://your-backend-app.onrender.com`
-Should see: JSON response with "status": "healthy"
-
-### Frontend Test:
-Visit: `https://your-app.vercel.app`
-Should see: Uber clone application
-
-### Full Test:
-1. Register new user
-2. Login
-3. Check browser console for errors
-
----
-
-## 🎉 You're Live!
-
-**Frontend**: https://your-app.vercel.app
-**Backend**: https://your-backend-app.onrender.com
-
----
-
-## 🆘 Quick Fixes
-
-**Backend won't start?**
-- Check MongoDB connection string
-- Verify environment variables
-- Check Render logs
-
-**Frontend can't connect?**
-- Verify VITE_API_URL
-- Check CORS settings
-- Check browser console
-
-**Database errors?**
-- Check MongoDB Atlas IP whitelist
-- Verify database user permissions
-- Test connection string
-
----
-
-## 📞 Need Help?
-
-1. Check deployment logs in Render/Vercel
-2. Verify all environment variables
-3. Test each component separately
-4. Check browser developer tools
-
-**Your Uber Clone is ready for the world! 🚀**
+**No map API keys needed** — OpenStreetMap tiles, Nominatim geocoding, and OSRM routing are free and keyless.

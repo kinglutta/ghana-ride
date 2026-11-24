@@ -30,8 +30,8 @@ If you are using this repository:
 
 1. **Generate New Credentials**
    - Create new MongoDB Atlas database with new credentials
-   - Generate new Google Maps API key
    - Create new JWT secret (32+ characters)
+   - No map API key is needed — OpenStreetMap, Nominatim, and OSRM are free and keyless
 
 2. **Update Your Local Environment**
    - Copy `Backend/.env.example` to `Backend/.env`

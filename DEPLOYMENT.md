@@ -1,158 +1,147 @@
-# 🚀 Deployment Guide
+# YENKO RIDE — Deployment Guide
 
-This guide will help you deploy the YENKO RIDE application to production using Render for the backend and Vercel for the frontend.
+Deploy the YENKO RIDE web app to production with **Render** (Node backend) and **Vercel** (Vite frontend). The stack is 100% free: OpenStreetMap tiles, Nominatim geocoding, and OSRM routing — no map API keys required.
 
-## 📋 Prerequisites
+## Prerequisites
 
-Before deploying, ensure you have:
+- GitHub repository pushed to `main` ([github.com/kinglutta/ghana-ride](https://github.com/kinglutta/ghana-ride))
+- MongoDB Atlas account (M0 free tier) — or any MongoDB-compatible host
+- Render account ([render.com](https://render.com))
+- Vercel account ([vercel.com](https://vercel.com))
 
-1. **GitHub Repository** - Your code pushed to GitHub
-2. **MongoDB Atlas Account** - For production database
-3. **OpenStreetMap** - Free map services (no API key required; geocoding via Nominatim + routing via OSRM)
-4. **Render Account** - For backend deployment
-5. **Vercel Account** - For frontend deployment
+---
 
-## 🔧 Backend Deployment (Render)
+## 1. MongoDB Atlas
 
-### Step 1: Prepare MongoDB Atlas
+1. Create a cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas) (M0 Sandbox is free).
+2. **Database Access** → Add a database user with read/write privileges. Save the password.
+3. **Network Access** → Add IP `0.0.0.0/0` (Render's outbound IPs are dynamic).
+4. **Database** → Connect → Connect your application → Node.js 4.1+.
+5. Copy the connection string and append the database name:
 
-1. Create a MongoDB Atlas account at [mongodb.com/atlas](https://www.mongodb.com/atlas)
-2. Create a new cluster (free tier available)
-3. Create a database user with read/write permissions
-4. Whitelist IP addresses (use 0.0.0.0/0 for Render)
-5. Get your connection string: `mongodb+srv://username:password@cluster.mongodb.net/uber-clone`
+```
+mongodb+srv://USER:PASSWORD@cluster.mongodb.net/yenko_ride?retryWrites=true&w=majority
+```
 
-### Step 2: Deploy to Render
+---
 
-1. Go to [render.com](https://render.com) and sign up/login
-2. Click "New +" → "Web Service"
-3. Connect your GitHub repository
-4. Configure the service:
-   - **Name**: `yenkoroide-backend`
-   - **Environment**: `Node`
-   - **Region**: Choose closest to your users
-   - **Branch**: `main`
-   - **Root Directory**: `Backend`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
+## 2. Backend → Render
 
-### Step 3: Set Environment Variables
+`render.yaml` is included in `Backend/` and preconfigures the service. If deploying via the dashboard instead:
 
-In Render dashboard, add these environment variables:
+| Setting | Value |
+| --- | --- |
+| Name | `yenkoroide-backend` |
+| Environment | Node |
+| Branch | `main` |
+| Root Directory | `Backend` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Health Check Path | `/health` |
+
+Set these environment variables in Render:
 
 ```env
 NODE_ENV=production
 PORT=3000
-MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/uber-clone
-JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
+MONGODB_URL=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/yenko_ride?retryWrites=true&w=majority
+JWT_SECRET=<random-32+-character-secret>
 JWT_EXPIRES_IN=24h
+FRONTEND_URL=https://your-app.vercel.app
 ```
 
-### Step 4: Deploy
+> Generate `JWT_SECRET` with `openssl rand -hex 32`. Never commit real secrets.
 
-1. Click "Create Web Service"
-2. Wait for deployment to complete
-3. Note your backend URL: `https://your-app-name.onrender.com`
+Deploy and note the backend URL, e.g. `https://yenkoroide-backend.onrender.com`.
 
-## 🎨 Frontend Deployment (Vercel)
+Verify: `GET https://yenkoroide-backend.onrender.com/health` returns JSON with `"status":"healthy"`.
 
-### Step 1: Deploy to Vercel
+---
 
-1. Go to [vercel.com](https://vercel.com) and sign up/login
-2. Click "New Project"
-3. Import your GitHub repository
-4. Configure the project:
-   - **Framework Preset**: Vite
-   - **Root Directory**: `Frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-   - **Install Command**: `npm install`
+## 3. Frontend → Vercel
 
-### Step 2: Set Environment Variables
+| Setting | Value |
+| --- | --- |
+| Framework Preset | Vite |
+| Root Directory | `Frontend` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm install` |
 
-In Vercel dashboard, add these environment variables:
+Set this environment variable in Vercel:
 
 ```env
-VITE_API_URL=https://your-backend-app.onrender.com
+VITE_API_URL=https://yenkoroide-backend.onrender.com
 ```
 
-### Step 3: Deploy
+`Frontend/vercel.json` already rewrites all paths to `/index.html` for client-side routing.
 
-1. Click "Deploy"
-2. Wait for deployment to complete
-3. Note your frontend URL: `https://your-app.vercel.app`
+Deploy and note the frontend URL, e.g. `https://yenkoroide.vercel.app`.
 
-## 🔄 Automatic Deployments
+---
 
-Both Render and Vercel will automatically redeploy when you push to the main branch.
+## 4. Update CORS
 
-## ✅ Verification
+The backend allows `FRONTEND_URL` plus any `*.vercel.app` origin in production, so CORS works out of the box. Set `FRONTEND_URL` to your exact Vercel URL for the tightest configuration, then Render redeploys automatically.
 
-1. **Backend**: Visit `https://your-backend-app.onrender.com` - should show "Hello World"
-2. **Frontend**: Visit `https://your-app.vercel.app` - should show the application
-3. **Database**: Check MongoDB Atlas for connection logs
-4. **API**: Test API endpoints using the frontend
+---
 
-## 🐛 Troubleshooting
+## 5. Verification checklist
 
-### Common Issues
+- [ ] `GET /health` on the backend returns `{"status":"healthy", ...}`
+- [ ] Frontend loads at the Vercel URL with no console errors
+- [ ] Register a new rider; log in
+- [ ] Book a ride (map tiles load from OpenStreetMap; fare uses OSRM)
+- [ ] Wallet top-up, promo code, referrals, notifications
+- [ ] SOS alert; driver verification submission; dispute creation
+- [ ] Admin dashboard analytics charts render
+- [ ] PWA install prompt appears (manifest + service worker)
 
-**Backend not starting:**
-- Check environment variables are set correctly
-- Verify MongoDB connection string
-- Check Render logs for errors
+---
 
-**Frontend API errors:**
-- Ensure VITE_API_URL points to your Render backend
-- Check CORS settings in backend
-- Verify API endpoints are working
+## Environment variable reference
 
-**Database connection issues:**
-- Check MongoDB Atlas IP whitelist
-- Verify connection string format
-- Ensure database user has correct permissions
+### Backend (`Backend/.env`)
 
-## 📊 Monitoring
+| Variable | Example | Required |
+| --- | --- | --- |
+| `PORT` | `3000` | Yes |
+| `NODE_ENV` | `production` | Yes |
+| `MONGODB_URL` | `mongodb+srv://...` | Yes |
+| `JWT_SECRET` | random 32+ chars | Yes |
+| `JWT_EXPIRES_IN` | `24h` | Yes |
+| `FRONTEND_URL` | `https://yenkoroide.vercel.app` | Yes |
 
-### Backend (Render)
-- Monitor logs in Render dashboard
-- Set up health checks
-- Monitor response times
+### Frontend (`Frontend/.env`)
 
-### Frontend (Vercel)
-- Use Vercel Analytics
-- Monitor Core Web Vitals
-- Check deployment logs
+| Variable | Example | Required |
+| --- | --- | --- |
+| `VITE_API_URL` | `https://yenkoroide-backend.onrender.com` | Yes |
 
-## 🔒 Security Checklist
+No map/API keys are needed — OpenStreetMap, Nominatim, and OSRM are free and keyless.
 
-- [ ] Environment variables are set correctly
-- [ ] MongoDB Atlas IP whitelist is configured
-- [ ] JWT secret is secure and random
-- [ ] No API keys required - using free OpenStreetMap services (Nominatim + OSRM)
-- [ ] CORS is configured for production domains
-- [ ] HTTPS is enabled (automatic on both platforms)
+---
 
-## 📈 Performance Optimization
+## Troubleshooting
 
-### Backend
-- Enable compression in Express
-- Use MongoDB indexes
-- Implement caching where appropriate
-- Monitor database queries
+**Backend won't start** — check `MONGODB_URL`, verify env vars, read Render logs.
 
-### Frontend
-- Optimize images and assets
-- Use code splitting
-- Enable service workers
-- Monitor bundle size
+**CORS errors** — confirm `FRONTEND_URL` matches the Vercel URL exactly and that `NODE_ENV=production` is set.
 
-## 🚀 Going Live
+**Blank map** — confirm tiles load from `tile.openstreetmap.org`; check the browser console for mixed-content errors.
 
-1. Update README.md with live URLs
-2. Test all features thoroughly
-3. Set up monitoring and alerts
-4. Create backup strategies
-5. Document any custom configurations
+**API connection failed** — confirm `VITE_API_URL` is the Render URL (no trailing slash) and redeploy the frontend after changing it.
 
-Your Uber Clone is now live! 🎉
+**Cold starts** — Render's free tier sleeps after inactivity; the first request may take ~30s. Use a ping service if needed.
+
+---
+
+## Security checklist
+
+- [ ] No secrets committed to Git (`.env` files are gitignored)
+- [ ] Strong random `JWT_SECRET`
+- [ ] Atlas network access configured
+- [ ] Production CORS restricted to known domains
+- [ ] HTTPS enabled (automatic on Render and Vercel)
+
+Your YENKO RIDE deployment is live.
