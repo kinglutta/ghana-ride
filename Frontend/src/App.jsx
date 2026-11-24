@@ -22,6 +22,7 @@ import ScheduledRide from './pages/ScheduledRide'
 import Referral from './pages/Referral'
 import Notifications from './pages/Notifications'
 import Chat from './pages/Chat'
+import DriverVerification from './pages/DriverVerification'
 import SocketStatus from './components/SocketStatus'
 
 const App = () => {
@@ -112,6 +113,11 @@ const App = () => {
         <Route path='/chat/:rideId' element={
           <UserProtectedWrapper>
             <Chat />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/driver-verification' element={
+          <UserProtectedWrapper>
+            <DriverVerification />
           </UserProtectedWrapper>
         } />
       </Routes>

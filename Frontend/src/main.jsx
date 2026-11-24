@@ -6,6 +6,16 @@ import UserContext from './context/UserContext'
 import CaptainContext from './context/CaptainContext.jsx'
 import SocketProvider from './context/SocketContext'
 
+// PWA: register service worker for offline app shell
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(
+      (reg) => console.log('SW registered', reg.scope),
+      (err) => console.log('SW registration failed', err)
+    );
+  });
+}
+
 createRoot(document.getElementById('root')).render(
   <UserContext>
     <CaptainContext>

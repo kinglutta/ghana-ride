@@ -16,6 +16,8 @@ const scheduledRideRoutes = require('./routes/scheduledRide.routes');
 const referralRoutes = require('./routes/referral.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const chatRoutes = require('./routes/chat.routes');
+const driverVerificationRoutes = require('./routes/driverVerification.routes');
+const disputeRoutes = require('./routes/dispute.routes');
 
 // CORS configuration for production and development
 const corsOptions = {
@@ -80,5 +82,7 @@ app.use('/scheduled-rides', scheduledRideRoutes);
 app.use('/referrals', referralRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/chat', chatRoutes);
+app.use('/driver-verification', driverVerificationRoutes);
+app.use('/disputes', disputeRoutes);
 
 module.exports = app;// Force redeploy Fri, May 30, 2025  2:17:46 AM

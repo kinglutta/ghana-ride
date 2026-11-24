@@ -76,6 +76,12 @@ const captainSchema = new mongoose.Schema({
         default: 5,
     },
 
+    // Verification status: true when admin approved documents
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+
     // Total completed rides
     totalRides: {
         type: Number,
