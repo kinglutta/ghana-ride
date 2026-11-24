@@ -35,30 +35,30 @@ A 100% free-stack ride-hailing platform that exceeds Yango's standard for the Gh
 ## TRANSFORMATION ROADMAP
 
 ### Phase 1: Core Payments + Safety (Week 1) — CRITICAL
-- [ ] Mobile Money payment model & endpoints (MTN, Vodafone, AirtelTigo)
-- [ ] Wallet system (deposit, pay, refund)
-- [ ] SOS / Emergency button with location broadcast
-- [ ] Emergency contacts management
+- [x] Mobile Money payment model & endpoints (MTN, Vodafone, AirtelTigo)
+- [x] Wallet system (deposit, pay, refund)
+- [x] SOS / Emergency button with location broadcast
+- [x] Emergency contacts management
 - [ ] Trip sharing (share live ride with contacts)
 
 ### Phase 2: Multi-Service + Driver Tools (Week 2)
-- [ ] Service categories (Ride, Delivery, Courier, Bike)
-- [ ] Vehicle sub-categories (Economy, Comfort, XL)
-- [ ] Driver earnings dashboard
-- [ ] Payout request system
-- [ ] Surge pricing engine
+- [x] Service categories (Ride, Delivery, Courier, Bike)
+- [x] Vehicle sub-categories (Economy, Comfort, XL)
+- [x] Driver earnings dashboard
+- [x] Payout request system
+- [x] Surge pricing engine
 
 ### Phase 3: Advanced Features (Week 3)
-- [ ] Scheduled rides
-- [ ] Promo codes & referral system
-- [ ] Push notifications (Firebase Web Push)
+- [x] Scheduled rides
+- [x] Promo codes & referral system
+- [x] Push notifications (Web Push + in-app center)
 - [ ] Ride pooling / shared rides
-- [ ] In-app chat (passenger ↔ driver)
+- [x] In-app chat (passenger ↔ driver)
 
 ### Phase 4: Polish & Launch (Week 4)
-- [ ] PWA manifest + offline support
-- [ ] Driver document verification upload
-- [ ] Dispute management (admin)
+- [x] PWA manifest + offline support
+- [x] Driver document verification upload
+- [x] Dispute management (admin)
 - [ ] Analytics & reports
 - [ ] Production deployment
 
