@@ -1,46 +1,6 @@
 import React from 'react'
-import car from '../assets/car.png'
-import bike from '../assets/bike.png'
-import auto from '../assets/auto.png'
 import { formatFare } from '../lib/mapUtils'
-
-const VEHICLE_CONFIG = {
-    car: {
-        icon: car,
-        name: 'YenkoGo',
-        seats: 4,
-        desc: 'Affordable, compact rides',
-        iconText: '🚗',
-    },
-    bike: {
-        icon: bike,
-        name: 'YenkoBike',
-        seats: 1,
-        desc: 'Fast motorcycle rides',
-        iconText: '🏍️',
-    },
-    auto: {
-        icon: auto,
-        name: 'YenkoAuto',
-        seats: 3,
-        desc: 'Affordable auto rides',
-        iconText: '🛺',
-    },
-    comfort: {
-        icon: car,
-        name: 'YenkoComfort',
-        seats: 4,
-        desc: 'Premium sedans, more legroom',
-        iconText: '✨',
-    },
-    xl: {
-        icon: car,
-        name: 'YenkoXL',
-        seats: 6,
-        desc: 'Spacious SUVs for groups',
-        iconText: '🚙',
-    },
-}
+import { RIDER_VEHICLE_ORDER, VEHICLE_TYPES } from '../lib/vehicleTypes'
 
 const VehiclePanel = ({ setVehiclePanel, selectVehicle, fare, setConfirmRidePanel, selectedVehicle }) => {
     const isSurge = fare && fare.surgeMultiplier > 1
@@ -56,8 +16,8 @@ const VehiclePanel = ({ setVehiclePanel, selectVehicle, fare, setConfirmRidePane
                 </div>
             )}
             <div className='flex-1 overflow-y-auto'>
-                {['car', 'bike', 'auto', 'comfort', 'xl'].map((vt) => {
-                    const cfg = VEHICLE_CONFIG[vt]
+                {RIDER_VEHICLE_ORDER.map((vt) => {
+                    const cfg = VEHICLE_TYPES[vt]
                     const fareForVT = fare && fare.vehicleType === vt ? fare : null
                     const price = fareForVT ? fareForVT.finalFare : null
                     const basePrice = fareForVT ? fareForVT.baseFare : null
@@ -80,7 +40,7 @@ const VehiclePanel = ({ setVehiclePanel, selectVehicle, fare, setConfirmRidePane
                                 <img className='h-12' src={cfg.icon} alt="" />
                                 <div className='w-1/2 ml-2'>
                                     <h4 className='font-medium text-base flex items-center gap-1'>
-                                        {cfg.iconText} {cfg.name} <span className='text-xs text-gray-500'><i className="ri-user-fill"></i>{cfg.seats}</span>
+                                        {cfg.emoji} {cfg.name} <span className='text-xs text-gray-500'><i className="ri-user-fill"></i>{cfg.seats}</span>
                                     </h4>
                                     <h5 className='font-medium text-sm'>{Math.floor(Math.random() * 3) + 2} mins away</h5>
                                     <p className='font-normal text-xs text-gray-600'>{cfg.desc}</p>

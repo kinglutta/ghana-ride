@@ -1,41 +1,20 @@
 import React from 'react'
-import car from '../assets/car.png'
-import bike from '../assets/bike.png'
-import auto from '../assets/auto.png'
+import { formatFare } from '../lib/mapUtils'
+import { VEHICLE_TYPES } from '../lib/vehicleTypes'
 
-const ConfirmRidePanel = ({ selectedVehicle, setConfirmRidePanel, setVehiclePanel, selectedLocation, pickup, destination, setLookingForDriver }) => {
+const ConfirmRidePanel = ({ selectedVehicle, fare, setConfirmRidePanel, setVehiclePanel, selectedLocation, pickup, destination, setLookingForDriver }) => {
 
     const getVehicleDetails = () => {
-        switch (selectedVehicle) {
-            case 'car':
-                return {
-                    image: car,
-                    name: 'YenkoGo',
-                    capacity: 4,
-                    time: '2 mins away',
-                    price: 'GH₵193.20',
-                    description: 'Affordable, compact rides'
-                }
-            case 'bike':
-                return {
-                    image: bike,
-                    name: 'YenkoBike',
-                    capacity: 1,
-                    time: '3 mins away',
-                    price: 'GH₵65.35',
-                    description: 'Affordable motorcycle rides'
-                }
-            case 'auto':
-                return {
-                    image: auto,
-                    name: 'YenkoAuto',
-                    capacity: 3,
-                    time: '2 mins away',
-                    price: 'GH₵118.86',
-                    description: 'Affordable Auto rides'
-                }
-            default:
-                return null
+        const config = VEHICLE_TYPES[selectedVehicle]
+        if (!config) return null
+
+        return {
+            image: config.icon,
+            name: config.name,
+            capacity: config.seats,
+            time: '2 mins away',
+            price: fare?.finalFare ? formatFare(fare.finalFare) : 'See fare',
+            description: config.desc,
         }
     }
 

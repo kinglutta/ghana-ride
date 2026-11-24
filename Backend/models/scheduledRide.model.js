@@ -23,7 +23,7 @@ const scheduledRideSchema = new mongoose.Schema({
     },
     vehicleType: {
         type: String,
-        enum: ['auto', 'moto', 'car', 'comfort', 'xl', 'bike'],
+        enum: ['auto', 'moto', 'car', 'comfort', 'xl', 'bike', 'motor', 'okada', 'pragya'],
         default: 'car',
         required: true,
     },

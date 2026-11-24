@@ -33,7 +33,7 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **User Registration & Authentication** - Secure signup/login with JWT tokens
 - **Real-time Ride Booking** - Book rides with live driver tracking
 - **Location Search** - Autocomplete address search with OpenStreetMap (Nominatim) integration
-- **Multiple Vehicle Types** - Choose from car, motorcycle, or auto-rickshaw
+- **Multiple Vehicle Types** - Choose from car, auto, Bike, Motor, Okada or Pragya (passenger tricycle)
 - **Live Ride Tracking** - Real-time GPS tracking during rides
 - **Fare Calculation** - Dynamic pricing based on distance and vehicle type
 - **Ride History** - View past rides and receipts

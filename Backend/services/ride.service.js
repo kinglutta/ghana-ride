@@ -8,7 +8,7 @@ const crypto = require('crypto');
  * Calculate fare with surge pricing and vehicle categories
  * @param {string} pickup - pickup address
  * @param {string} destination - destination address
- * @param {string} vehicleType - 'auto' | 'car' | 'moto' | 'xl' | 'comfort' | 'bike'
+ * @param {string} vehicleType - includes car, auto, bike, motor, okada, pragya, comfort and xl
  * @param {number} lat - pickup latitude for surge calculation
  * @param {number} lng - pickup longitude for surge calculation
  * @returns {Object} fare breakdown with surge info
@@ -21,7 +21,8 @@ async function getFare(pickup, destination, vehicleType = 'car', lat, lng) {
 
     const distanceTime = await mapService.getDistanceTime(pickup, destination);
 
-    // Vehicle category base fares and rates (Ghana Cedis)
+    // Vehicle category base fares and rates (Ghana Cedis).
+    // Motor and Okada are distinct motorcycle rides; Pragya is a passenger tricycle.
     const vehicleConfig = {
         auto:    { base: 25, perKm: 8,  perMin: 1.5, multiplier: 0.8 },
         moto:    { base: 20, perKm: 6,  perMin: 1.2, multiplier: 0.7 },
@@ -29,6 +30,9 @@ async function getFare(pickup, destination, vehicleType = 'car', lat, lng) {
         comfort: { base: 70, perKm: 20, perMin: 4,   multiplier: 1.4 },
         xl:      { base: 90, perKm: 25, perMin: 5,   multiplier: 1.8 },
         bike:    { base: 15, perKm: 5,  perMin: 1,   multiplier: 0.6 },
+        motor:   { base: 12, perKm: 4,  perMin: 0.8, multiplier: 0.5 },
+        okada:   { base: 15, perKm: 5,  perMin: 1,   multiplier: 0.6 },
+        pragya:  { base: 20, perKm: 6,  perMin: 1.2, multiplier: 0.7 },
     };
 
     const config = vehicleConfig[vehicleType] || vehicleConfig.car;

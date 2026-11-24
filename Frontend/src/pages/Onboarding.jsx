@@ -12,6 +12,7 @@ import { CaptainDataContext } from '../context/captain.context'
 import { Brand } from '../components/ui/YenkoShell'
 import { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
 import { setToken } from '../lib/authToken'
+import { CAPTAIN_VEHICLE_ORDER, VEHICLE_TYPES } from '../lib/vehicleTypes'
 import usePageTitle from '../hooks/usePageTitle'
 
 const ROLES = [
@@ -457,9 +458,9 @@ const Onboarding = () => {
                                             value={form.vehicleType}
                                             onChange={update('vehicleType')}
                                         >
-                                            <option value='car'>Car</option>
-                                            <option value='auto'>Auto</option>
-                                            <option value='moto'>Moto</option>
+                                            {CAPTAIN_VEHICLE_ORDER.map((id) => (
+                                                <option key={id} value={id}>{VEHICLE_TYPES[id].label}</option>
+                                            ))}
                                         </select>
                                     </div>
                                 </fieldset>

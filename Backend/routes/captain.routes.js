@@ -11,7 +11,7 @@ router.post('/register', [
     body('vehicle.color').isLength({ min: 3 }).withMessage('Color is required'),
     body('vehicle.plate').isLength({ min: 3 }).withMessage('Plate is required'),
     body('vehicle.capacity').isInt({ min: 1 }).withMessage('Capacity must be at least 1 person'),
-    body('vehicle.vehicleType').isIn(['car', 'motorcycle', 'auto']).withMessage('Vehicle type is required'),
+    body('vehicle.vehicleType').isIn(['car', 'motorcycle', 'moto', 'auto', 'motor', 'okada', 'pragya']).withMessage('Vehicle type is required'),
 ], captainController.registerCaptain)
 
 router.post('/login', [

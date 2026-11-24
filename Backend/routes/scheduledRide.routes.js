@@ -9,7 +9,7 @@ router.post(
     authMiddleware.authUser,
     body('pickup').isString().isLength({ min: 3 }),
     body('destination').isString().isLength({ min: 3 }),
-    body('vehicleType').isIn(['auto', 'moto', 'car', 'comfort', 'xl', 'bike']),
+    body('vehicleType').isIn(['auto', 'moto', 'car', 'comfort', 'xl', 'bike', 'motor', 'okada', 'pragya']),
     body('scheduledAt').isISO8601(),
     body('fare').isNumeric(),
     body('lat').optional().isFloat(),

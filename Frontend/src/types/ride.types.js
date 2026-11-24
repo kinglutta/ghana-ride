@@ -12,7 +12,7 @@
  * @property {string} email
  * @property {Object} vehicle - { color, plate, capacity, vehicleType, car_image_url? }
  * @property {number} vehicle.capacity - number of seats
- * @property {string} vehicle.vehicleType - 'car' | 'motorcycle' | 'auto'
+ * @property {string} vehicle.vehicleType - 'car' | 'auto' | 'motor' | 'okada' | 'pragya' | 'bike'
  * @property {Object} location - { ltd, lng }
  * @property {number} rating - average driver rating 0-5
  * @property {number} totalRides - number of completed rides

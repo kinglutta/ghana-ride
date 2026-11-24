@@ -10,6 +10,7 @@ import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
 import { formatFare } from '../lib/mapUtils';
 import { getToken } from '../lib/authToken';
+import { RIDER_VEHICLE_ORDER, VEHICLE_TYPES } from '../lib/vehicleTypes';
 
 const ScheduledRide = () => {
     const navigate = useNavigate();
@@ -22,13 +23,16 @@ const ScheduledRide = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    const VEHICLE_CONFIG = {
-        car: { name: 'YenkoGo', icon: '🚗', seats: 4 },
-        bike: { name: 'YenkoBike', icon: '🏍️', seats: 1 },
-        auto: { name: 'YenkoAuto', icon: '🛺', seats: 3 },
-        comfort: { name: 'YenkoComfort', icon: '✨', seats: 4 },
-        xl: { name: 'YenkoXL', icon: '🚙', seats: 6 },
-    };
+    const VEHICLE_CONFIG = Object.fromEntries(
+        RIDER_VEHICLE_ORDER.map((id) => [
+            id,
+            {
+                name: VEHICLE_TYPES[id].name,
+                icon: VEHICLE_TYPES[id].emoji,
+                seats: VEHICLE_TYPES[id].seats,
+            },
+        ])
+    );
 
     // Default to tomorrow at 9am
     useEffect(() => {

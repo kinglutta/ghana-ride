@@ -4,6 +4,7 @@ import axios from 'axios'
 import { CaptainDataContext } from '../context/captain.context'
 import AuthShell, { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
 import { setToken } from '../lib/authToken';
+import { CAPTAIN_VEHICLE_ORDER, VEHICLE_TYPES } from '../lib/vehicleTypes';
 
 const CaptainSignup = () => {
   const navigate = useNavigate()
@@ -179,9 +180,9 @@ const CaptainSignup = () => {
               onChange={(e) => setVehicleType(e.target.value)}
             >
               <option value='' disabled>Select vehicle type</option>
-              <option value='car'>Car</option>
-              <option value='auto'>Auto</option>
-              <option value='moto'>Moto</option>
+              {CAPTAIN_VEHICLE_ORDER.map((id) => (
+                <option key={id} value={id}>{VEHICLE_TYPES[id].label}</option>
+              ))}
             </select>
           </div>
         </fieldset>

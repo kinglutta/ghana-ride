@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import car from '../assets/car.png'
+import { vehicleConfig } from '../lib/vehicleTypes'
 
 const ConfirmRide = (props) => {
     const [isLoading, setIsLoading] = useState(false)
+    const vehicle = vehicleConfig(props.vehicleType)
     return (
         <div className='h-full flex flex-col'>
             <h5 className='p-1 text-center w-[93%] absolute top-0' onClick={() => {
@@ -13,7 +14,8 @@ const ConfirmRide = (props) => {
 
             <div className='flex-1 flex flex-col justify-between'>
                 <div className='flex flex-col items-center'>
-                    <img className='h-20' src={car} alt="YENKO vehicle" />
+                    <img className='h-20' src={vehicle.icon} alt={`YENKO ${vehicle.label}`} />
+                    <p className='mt-1 text-xs font-semibold text-gray-500'>{vehicle.emoji} {vehicle.name} · {vehicle.seats} seat{vehicle.seats > 1 ? 's' : ''}</p>
 
                     <div className='w-full mt-5'>
                         <div className='flex items-center gap-5 p-3 border-b-2'>
