@@ -15,6 +15,8 @@ import CaptainRiding from './pages/CaptainRiding'
 import Riding from './pages/Riding'
 import RideHistory from './pages/RideHistory'
 import AdminDashboard from './pages/AdminDashboard'
+import PaymentPage from './pages/PaymentPage'
+import SafetyPage from './pages/SafetyPage'
 import SocketStatus from './components/SocketStatus'
 
 const App = () => {
@@ -65,6 +67,16 @@ const App = () => {
         <Route path='/admin' element={
           <UserProtectedWrapper>
             <AdminDashboard />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/payment' element={
+          <UserProtectedWrapper>
+            <PaymentPage />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/safety' element={
+          <UserProtectedWrapper>
+            <SafetyPage />
           </UserProtectedWrapper>
         } />
       </Routes>

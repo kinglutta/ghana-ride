@@ -249,11 +249,25 @@ const Home = () => {
 
     return (
         <div className='h-screen relative overflow-hidden'>
-            {/* Header with logo and user avatar */}
-            <div className='absolute left-5 top-5 z-10'>
+            {/* Header with logo, user avatar, and quick actions */}
+            <div className='absolute left-5 top-5 z-20'>
                 <img className='w-16' src={logo} alt="YENKO Logo" />
             </div>
-            <div className='absolute right-5 top-5 z-10'>
+            <div className='absolute right-5 top-5 z-20 flex items-center gap-3'>
+                <button
+                    onClick={() => navigate('/payment')}
+                    className='w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors'
+                    title='Wallet & Payments'
+                >
+                    💳
+                </button>
+                <button
+                    onClick={() => navigate('/safety')}
+                    className='w-12 h-12 rounded-full bg-white border border-red-100 flex items-center justify-center shadow-sm hover:bg-red-50 transition-colors'
+                    title='Safety & SOS'
+                >
+                    🛡️
+                </button>
                 <img
                     className='h-12 w-12 rounded-full object-cover border-2 border-white shadow-lg bg-white'
                     src={generateUserAvatar(user)}
@@ -263,6 +277,29 @@ const Home = () => {
                     }}
                 />
             </div>
+
+            {/* Service Categories */}
+            <div className='absolute top-24 left-5 right-5 z-20 flex flex-wrap gap-2 justify-center'>
+                {[
+                    { name: 'Ride', icon: '🚗', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+                    { name: 'Bike Taxi', icon: '🏍️', color: 'bg-green-50 text-green-700 border-green-200' },
+                    { name: 'Delivery', icon: '📦', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+                    { name: 'Courier', icon: '📮', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+                ].map((service) => (
+                    <button
+                        key={service.name}
+                        onClick={() => {
+                            // Service selection handler
+                        }}
+                        className={`px-5 py-2.5 rounded-full border text-sm font-medium transition-all shadow-sm ${
+                            service.color
+                        } hover:scale-105`}
+                    >
+                        {service.icon} {service.name}
+                    </button>
+                ))}
+            </div>
+
             <div className='h-screen w-screen'>
                 {/* image for temporary use  */}
                 <LiveTracking />

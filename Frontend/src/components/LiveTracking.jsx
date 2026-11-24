@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
 import MapFallback from './MapFallback'
 import { SocketContext } from '../context/SocketContext'
+import { useNavigate } from 'react-router-dom'
 
 const containerStyle = {
     width: '100%',
@@ -76,7 +77,9 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
     const [captainPosition, setCaptainPosition] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState(null);
     const [loadError, setLoadError] = useState(null);
+    const [sosActive, setSosActive] = useState(false);
     const { socket } = useContext(SocketContext);
+    const navigate = useNavigate();
 
     // Get initial position
     useEffect(() => {
@@ -114,6 +117,41 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
 
         return () => navigator.geolocation.clearWatch(watchId);
     }, []);
+
+    // SOS emergency handler
+    const handleSOS = async () => {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const token = localStorage.getItem('token');
+                    const body = {
+                        location: { ltd: latitude, lng: longitude },
+                    };
+                    if (ride) body.rideId = ride._id;
+                    await axios.post(
+                        `${import.meta.env.VITE_API_URL}/safety/sos`,
+                        body,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    setSosActive(true);
+                    if (socket) {
+                        socket.emit('sos-activated', {
+                            location: { ltd: latitude, lng: longitude },
+                            rideId: ride ? ride._id : null,
+                        });
+                    }
+                } catch (err) {
+                    console.error('SOS error:', err);
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    };
 
     // Listen for captain location updates if showing captain
     useEffect(() => {
@@ -208,6 +246,27 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
                 showCaptain={showCaptain}
                 routeCoordinates={routeCoordinates}
             />
+
+            {/* SOS Emergency Button Overlay */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
+                <button
+                    onClick={handleSOS}
+                    disabled={sosActive}
+                    className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all transform active:scale-90 ${
+                        sosActive
+                            ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
+                            : 'bg-red-600 hover:bg-red-700'
+                    }`}
+                    title="Emergency SOS"
+                >
+                    <span className="text-2xl">{sosActive ? '✅' : '🚨'}</span>
+                </button>
+                {sosActive && (
+                    <div className="mt-2 text-xs text-red-600 font-medium text-center bg-red-50 px-2 py-1 rounded">
+                        SOS Active — Help on the way
+                    </div>
+                )}
+            </div>
         </MapContainer>
     );
 };

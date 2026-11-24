@@ -9,6 +9,8 @@ const captainRoutes = require('./routes/captain.routes');
 const mapRoutes = require('./routes/maps.routes');
 const rideRoutes = require('./routes/ride.routes');
 const adminRoutes = require('./routes/admin.routes');
+const paymentRoutes = require('./routes/payment.routes');
+const safetyRoutes = require('./routes/safety.routes');
 
 // CORS configuration for production and development
 const corsOptions = {
@@ -66,5 +68,7 @@ app.use('/captains', captainRoutes);
 app.use('/maps', mapRoutes);
 app.use('/rides', rideRoutes);
 app.use('/admin', adminRoutes);
+app.use('/payment', paymentRoutes);
+app.use('/safety', safetyRoutes);
 
 module.exports = app;// Force redeploy Fri, May 30, 2025  2:17:46 AM
