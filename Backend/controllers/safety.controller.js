@@ -1,5 +1,4 @@
-const SOSAlert = require('../models/payment.models').SOSAlert;
-const EmergencyContact = require('../models/payment.models').EmergencyContact;
+const { SOSAlert, EmergencyContact } = require('../models/payment.models');
 const Ride = require('../models/ride.model');
 const User = require('../models/user.model');
 const { validationResult } = require('express-validator');
@@ -91,7 +90,7 @@ module.exports.removeEmergencyContact = async (req, res) => {
 module.exports.activateSOS = [
     body('location.ltd').isNumeric().withMessage('Latitude required'),
     body('location.lng').isNumeric().withMessage('Longitude required'),
-    body('rideId').optional().isMongoId().withMessage('Invalid ride id'),
+    body('rideId').optional({ values: 'null' }).isMongoId().withMessage('Invalid ride id'),
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

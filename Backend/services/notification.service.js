@@ -1,5 +1,4 @@
-const Notification = require('../models/notification.model');
-const PushToken = require('../models/notification.model').PushToken;
+const { Notification, PushToken } = require('../models/notification.model');
 
 /**
  * NotificationService — in-app notifications + Web Push (free, no Firebase required)

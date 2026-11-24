@@ -1,5 +1,4 @@
-const Referral = require('../models/referral.model');
-const UserCredit = require('../models/referral.model').UserCredit;
+const { Referral, UserCredit } = require('../models/referral.model');
 const User = require('../models/user.model');
 const crypto = require('crypto');
 

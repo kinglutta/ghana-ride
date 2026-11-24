@@ -46,8 +46,6 @@ const notificationSchema = new mongoose.Schema({
 notificationSchema.index({ user: 1, isRead: 1, createdAt: -1 });
 notificationSchema.index({ captain: 1, isRead: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Notification', notificationSchema);
-
 /**
  * PushToken — device tokens for push notifications (PWA / mobile)
  */
@@ -78,4 +76,7 @@ const pushTokenSchema = new mongoose.Schema({
 
 pushTokenSchema.index({ token: 1 }, { unique: true });
 
-module.exports = mongoose.model('PushToken', pushTokenSchema);
+module.exports = {
+    Notification: mongoose.model('Notification', notificationSchema),
+    PushToken: mongoose.model('PushToken', pushTokenSchema),
+};

@@ -40,8 +40,6 @@ const referralSchema = new mongoose.Schema({
 referralSchema.index({ referrer: 1, status: 1 });
 referralSchema.index({ referred: 1 }, { unique: true }); // one referral per user
 
-module.exports = mongoose.model('Referral', referralSchema);
-
 /**
  * UserCredit — stored ride credits from referrals/promos
  */
@@ -62,4 +60,7 @@ const userCreditSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('UserCredit', userCreditSchema);
+module.exports = {
+    Referral: mongoose.model('Referral', referralSchema),
+    UserCredit: mongoose.model('UserCredit', userCreditSchema),
+};

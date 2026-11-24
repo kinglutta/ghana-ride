@@ -25,8 +25,6 @@ const walletSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Wallet', walletSchema);
-
 /**
  * PaymentTransaction — records every money movement
  * Mobile Money top-ups, ride payments, refunds, driver payouts.
@@ -75,8 +73,6 @@ const paymentTransactionSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('PaymentTransaction', paymentTransactionSchema);
-
 /**
  * PromoCode — referral and discount codes
  */
@@ -121,8 +117,6 @@ const promoCodeSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('PromoCode', promoCodeSchema);
-
 /**
  * EmergencyContact — user's safety contacts for SOS
  */
@@ -149,8 +143,6 @@ const emergencyContactSchema = new mongoose.Schema({
         default: false,
     },
 }, { timestamps: true });
-
-module.exports = mongoose.model('EmergencyContact', emergencyContactSchema);
 
 /**
  * SOSAlert — records SOS activations for safety review
@@ -182,4 +174,10 @@ const sosAlertSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('SOSAlert', sosAlertSchema);
+module.exports = {
+    Wallet: mongoose.model('Wallet', walletSchema),
+    PaymentTransaction: mongoose.model('PaymentTransaction', paymentTransactionSchema),
+    PromoCode: mongoose.model('PromoCode', promoCodeSchema),
+    EmergencyContact: mongoose.model('EmergencyContact', emergencyContactSchema),
+    SOSAlert: mongoose.model('SOSAlert', sosAlertSchema),
+};

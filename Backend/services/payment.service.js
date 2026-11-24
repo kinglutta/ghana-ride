@@ -1,5 +1,4 @@
-const PaymentTransaction = require('../models/payment.models').PaymentTransaction;
-const Wallet = require('../models/payment.models').Wallet;
+const { Wallet, PaymentTransaction, PromoCode } = require('../models/payment.models');
 const Ride = require('../models/ride.model');
 const User = require('../models/user.model');
 const axios = require('axios');
@@ -150,7 +149,7 @@ module.exports.getProviders = () => {
  * Apply promo code to a ride fare
  */
 module.exports.applyPromoCode = async ({ code, fare, userId }) => {
-    const promo = await PaymentTransaction.model('PromoCode').findOne({
+    const promo = await PromoCode.findOne({
         code: code.toUpperCase(),
         isActive: true,
         expiresAt: { $gt: new Date() },
