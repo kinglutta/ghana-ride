@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     socketId: {
         type: String,
     },
+    referralCode: {
+        type: String,
+        uppercase: true,
+    },
 })
 
 userSchema.methods.generateAuthToken = function () {

@@ -296,6 +296,13 @@ const Home = () => {
                 >
                     🛡️
                 </button>
+                <button
+                    onClick={() => navigate('/scheduled-rides/book')}
+                    className='w-12 h-12 rounded-full bg-white border border-orange-100 flex items-center justify-center shadow-sm hover:bg-orange-50 transition-colors'
+                    title='Schedule Ride'
+                >
+                    📅
+                </button>
                 <img
                     className='h-12 w-12 rounded-full object-cover border-2 border-white shadow-lg bg-white'
                     src={generateUserAvatar(user)}

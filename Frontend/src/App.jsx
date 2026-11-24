@@ -18,6 +18,10 @@ import AdminDashboard from './pages/AdminDashboard'
 import PaymentPage from './pages/PaymentPage'
 import SafetyPage from './pages/SafetyPage'
 import DriverEarnings from './pages/DriverEarnings'
+import ScheduledRide from './pages/ScheduledRide'
+import Referral from './pages/Referral'
+import Notifications from './pages/Notifications'
+import Chat from './pages/Chat'
 import SocketStatus from './components/SocketStatus'
 
 const App = () => {
@@ -83,6 +87,31 @@ const App = () => {
         <Route path='/driver-earnings' element={
           <UserProtectedWrapper>
             <DriverEarnings />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/scheduled-rides/book' element={
+          <UserProtectedWrapper>
+            <ScheduledRide />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/scheduled-rides/my-rides' element={
+          <UserProtectedWrapper>
+            <RideHistory />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/referrals' element={
+          <UserProtectedWrapper>
+            <Referral />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/notifications' element={
+          <UserProtectedWrapper>
+            <Notifications />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/chat/:rideId' element={
+          <UserProtectedWrapper>
+            <Chat />
           </UserProtectedWrapper>
         } />
       </Routes>
