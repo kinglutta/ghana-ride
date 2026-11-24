@@ -19,7 +19,7 @@ const RidePopUp = (props) => {
             }}><i className="text-3xl text-gray-200 ri-arrow-down-wide-line"></i></h5>
 
             <div className='flex-1 flex flex-col'>
-                <h3 className='text-2xl font-semibold mb-5'>🚗 New Ride Request!</h3>
+                <h3 className='text-2xl font-semibold mb-5'>🚗 New YENKO Ride Request!</h3>
 
                 <div className='flex items-center justify-between p-4 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-lg mt-4 shadow-lg'>
                     <div className='flex items-center gap-3'>
@@ -33,7 +33,7 @@ const RidePopUp = (props) => {
                         />
                         <div>
                             <h2 className='text-lg font-medium text-white'>
-                                {props.ride?.user?.fullname?.firstname + " " + props.ride?.user?.fullname?.lastname || 'User'}
+                                {[props.ride?.user?.fullname?.firstname, props.ride?.user?.fullname?.lastname].filter(Boolean).join(' ') || 'YENKO Rider'}
                             </h2>
                             <p className='text-sm text-yellow-100'>⭐ 4.8 rating</p>
                         </div>
@@ -62,8 +62,8 @@ const RidePopUp = (props) => {
                         <div className='flex items-center gap-5 p-3'>
                             <i className="ri-currency-line"></i>
                             <div>
-                                <h3 className='text-lg font-medium'>₹{props.ride?.fare} </h3>
-                                <p className='text-sm -mt-1 text-gray-600'>Cash Cash</p>
+                                <h3 className='text-lg font-medium'>GH₵{props.ride?.fare} </h3>
+                                <p className='text-sm -mt-1 text-gray-600'>Cash or Mobile Money</p>
                             </div>
                         </div>
                     </div>

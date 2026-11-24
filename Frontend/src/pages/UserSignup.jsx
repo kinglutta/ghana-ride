@@ -2,145 +2,145 @@ import React, { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { UserDataContext } from '../context/UserContext'
-
-
+import AuthShell, { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
 
 const UserSignup = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [userData, setUserData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const navigate = useNavigate()
-
-  const { user, setUser } = useContext(UserDataContext)
-
-
-
+  const { setUser } = useContext(UserDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
 
     try {
-      const newUser = {
-        fullname: {
-          firstname: firstName,
-          lastname: lastName
-        },
-        email: email,
-        password: password
-      }
-
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/users/register`, newUser)
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/users/register`, {
+        fullname: { firstname: firstName, lastname: lastName },
+        email,
+        password,
+      })
 
       if (response.status === 201) {
-        const data = response.data
-        setUser(data.user)
-        localStorage.setItem('token', data.token)
+        setUser(response.data.user)
+        localStorage.setItem('token', response.data.token)
         navigate('/home')
       }
-    } catch (error) {
-      console.error('Signup error:', error);
-      if (error.response?.status === 400) {
-        alert('User already exists or invalid data. Please try again.');
-      } else {
-        alert('Signup failed. Please check your connection and try again.');
-      }
+    } catch (err) {
+      setError(
+        err.response?.status === 400
+          ? 'An account with these details already exists, or your information is invalid.'
+          : 'We could not create your account right now. Please try again.'
+      )
     } finally {
       setIsLoading(false)
-      setEmail('')
-      setFirstName('')
-      setLastName('')
-      setPassword('')
     }
   }
+
   return (
-    <div>
-      <div className='p-7 h-screen flex flex-col justify-between'>
+    <AuthShell
+      eyebrow='Rider Registration'
+      title='Join the YENKO movement.'
+      subtitle='Create your rider account and discover a smarter way to move in Ghana.'
+      footer={
+        <div className='space-y-3 text-center'>
+          <p>
+            Already riding with YENKO?{' '}
+            <Link to='/login' className='font-bold text-[#111] underline decoration-[#f5c400] decoration-2 underline-offset-4'>
+              Sign in here
+            </Link>
+          </p>
+          <p className='text-xs leading-relaxed text-gray-400'>
+            YENKO RIDE uses secure token-based sessions and open-source maps. No paid map APIs, no hidden tracking fees.
+          </p>
+        </div>
+      }
+    >
+      <form onSubmit={submitHandler} className='space-y-5'>
+        {error && (
+          <div className='rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700'>
+            {error}
+          </div>
+        )}
+
         <div>
-          <img className='w-16 mb-10' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s" alt="" />
-
-          <form onSubmit={(e) => {
-            submitHandler(e)
-          }}>
-
-            <h3 className='text-lg w-1/2  font-medium mb-2'>What's your name</h3>
-            <div className='flex gap-4 mb-7'>
-              <input
-                required
-                className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
-                type="text"
-                placeholder='First name'
-                value={firstName}
-                onChange={(e) => {
-                  setFirstName(e.target.value)
-                }}
-              />
-              <input
-                required
-                className='bg-[#eeeeee] w-1/2  rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
-                type="text"
-                placeholder='Last name'
-                value={lastName}
-                onChange={(e) => {
-                  setLastName(e.target.value)
-                }}
-              />
-            </div>
-
-            <h3 className='text-lg font-medium mb-2'>What's your email</h3>
+          <label className={authLabelClass} htmlFor='signup-name'>Your full name</label>
+          <div className='flex gap-3'>
+            <input
+              id='signup-name'
+              required
+              className={authFieldClass}
+              type='text'
+              autoComplete='given-name'
+              placeholder='First name'
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
             <input
               required
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value)
-              }}
-              className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
-              type="email"
-              placeholder='email@example.com'
+              aria-label='Last name'
+              className={authFieldClass}
+              type='text'
+              autoComplete='family-name'
+              placeholder='Last name'
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
             />
-
-            <h3 className='text-lg font-medium mb-2'>Enter Password</h3>
-
-            <input
-              className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-              }}
-              required type="password"
-              placeholder='password'
-            />
-
-            <button
-              disabled={isLoading}
-              className={`font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg transition-all duration-200 flex justify-center items-center ${isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-[#111] hover:bg-gray-800 text-white'
-                }`}
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Creating account...
-                </>
-              ) : (
-                'Create account'
-              )}
-            </button>
-
-          </form>
-          <p className='text-center'>Already have a account? <Link to='/login' className='text-blue-600'>Login here</Link></p>
+          </div>
         </div>
+
         <div>
-          <p className='text-[10px] leading-tight'>This site is protected by reCAPTCHA and the <span className='underline'>Google Privacy
-            Policy</span> and <span className='underline'>Terms of Service apply</span>.</p>
+          <label className={authLabelClass} htmlFor='signup-email'>Email address</label>
+          <input
+            id='signup-email'
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={authFieldClass}
+            type='email'
+            autoComplete='email'
+            placeholder='you@example.com'
+          />
         </div>
-      </div>
-    </div >
+
+        <div>
+          <label className={authLabelClass} htmlFor='signup-password'>Create a password</label>
+          <input
+            id='signup-password'
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={authFieldClass}
+            type='password'
+            autoComplete='new-password'
+            placeholder='At least 8 characters'
+          />
+        </div>
+
+        <button
+          type='submit'
+          disabled={isLoading}
+          className={`flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-base font-bold transition-all ${
+            isLoading ? 'cursor-not-allowed bg-gray-400' : 'bg-[#f5c400] text-[#111] hover:bg-[#e5b600]'
+          }`}
+        >
+          {isLoading ? (
+            <>
+              <span className='mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-[#111]' />
+              Creating your account…
+            </>
+          ) : (
+            'Create my YENKO account'
+          )}
+        </button>
+      </form>
+    </AuthShell>
   )
 }
 

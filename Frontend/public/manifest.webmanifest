@@ -1,13 +1,13 @@
 {
-  "name": "YENKO - Ghana's Smartest Ride",
+  "name": "YENKO RIDE - Ghana's Smartest Ride",
   "short_name": "YENKO",
-  "description": "Ghana's smartest ride-hailing app. 100% free open-source stack.",
+  "description": "Safe, affordable rides across Ghana with live tracking, mobile money and open-source maps.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#f5c400",
   "icons": [
     {
       "src": "/icon.svg",

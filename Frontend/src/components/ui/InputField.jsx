@@ -1,5 +1,5 @@
 /**
- * InputField — reusable input component adapted from adrianhajdin/uber patterns.
+ * InputField — reusable YENKO input component.
  * Styled with Tailwind for React web.
  */
 

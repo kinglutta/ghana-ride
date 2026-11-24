@@ -1,6 +1,6 @@
 /**
  * RideHistory — shows past completed rides.
- * Pattern adapted from adrianhajdin/uber Profile/History screen.
+ * YENKO ride history screen pattern.
  * Web-optimized (React + Tailwind).
  */
 

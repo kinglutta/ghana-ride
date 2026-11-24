@@ -4,6 +4,7 @@ import FinishRide from '../components/FinishRide'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import LiveTracking from '../components/LiveTracking'
+import { Brand } from '../components/ui/YenkoShell'
 
 const CaptainRiding = () => {
 
@@ -31,9 +32,11 @@ const CaptainRiding = () => {
         <div className='h-screen relative flex flex-col justify-end'>
 
             <div className='fixed p-6 top-0 flex items-center justify-between w-screen'>
-                <img className='w-16' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
-                <Link to='/captain-home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full'>
-                    <i className="text-lg font-medium ri-logout-box-r-line"></i>
+                <div className='rounded-xl bg-white/95 px-3 py-2 shadow-md backdrop-blur'>
+                    <Brand compact />
+                </div>
+                <Link to='/captain-home' title='Back to Captain home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md'>
+                    <i className="text-lg font-medium ri-home-5-line"></i>
                 </Link>
             </div>
 

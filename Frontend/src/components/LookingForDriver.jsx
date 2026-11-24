@@ -1,4 +1,5 @@
 import React from 'react'
+import car from '../assets/car.png'
 
 const LookingForDriver = (props) => {
     return (
@@ -7,11 +8,11 @@ const LookingForDriver = (props) => {
                 props.setVehicleFound(false)
             }}><i className="text-3xl text-gray-200 ri-arrow-down-wide-line"></i></h5>
 
-            <h3 className='text-2xl font-semibold mb-5'>Looking for a Driver</h3>
+            <h3 className='text-2xl font-semibold mb-5'>Finding your YENKO Captain</h3>
 
             <div className='flex-1 flex flex-col justify-center items-center'>
                 <div className='flex flex-col items-center mb-6'>
-                    <img className='h-20' src="https://swyft.pl/wp-content/uploads/2023/05/how-many-people-can-a-uberx-take.jpg" alt="" />
+                    <img className='h-20' src={car} alt="YENKO vehicle" />
 
                     {/* Loading animation */}
                     <div className='mt-4 flex space-x-1'>
@@ -19,7 +20,7 @@ const LookingForDriver = (props) => {
                         <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce' style={{ animationDelay: '0.1s' }}></div>
                         <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce' style={{ animationDelay: '0.2s' }}></div>
                     </div>
-                    <p className='text-gray-600 mt-2'>Searching for nearby drivers...</p>
+                    <p className='text-gray-600 mt-2'>Searching for nearby YENKO Captains...</p>
                 </div>
 
                 <div className='w-full'>
@@ -40,8 +41,10 @@ const LookingForDriver = (props) => {
                     <div className='flex items-center gap-5 p-3'>
                         <i className="ri-currency-line text-lg"></i>
                         <div>
-                            <h3 className='text-lg font-medium'>₹{props.fare[props.vehicleType]} </h3>
-                            <p className='text-sm -mt-1 text-gray-600'>Cash Cash</p>
+                            <h3 className='text-lg font-medium'>
+                                GH₵{props.fare?.finalFare ? props.fare.finalFare : props.fare?.[props.vehicleType] || '0'}
+                            </h3>
+                            <p className='text-sm -mt-1 text-gray-600'>Cash or Mobile Money</p>
                         </div>
                     </div>
                 </div>

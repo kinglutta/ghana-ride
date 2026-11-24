@@ -1,7 +1,7 @@
 /**
- * Map utilities — adapted from adrianhajdin/uber patterns
+ * YENKO map utilities — shared ride-hailing patterns
  * Works with Leaflet coordinates [lat, lng] and OSRM responses.
- * 100% free — no Google Maps API keys required.
+ * 100% free — no paid map API keys required.
  */
 
 /**

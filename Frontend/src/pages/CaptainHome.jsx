@@ -9,7 +9,7 @@ import { useEffect, useContext } from 'react'
 import { SocketContext } from '../context/SocketContext'
 import { CaptainDataContext } from '../context/CaptainContext'
 import axios from 'axios'
-import logo from '../assets/logo.png'
+import { Brand } from '../components/ui/YenkoShell'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
 import SocketStatus from '../components/SocketStatus'
 import homepageCover from '../assets/homepage-cover.jpg'
@@ -297,7 +297,14 @@ const CaptainHome = () => {
     return (
         <div className='h-screen'>
             <div className='fixed p-6 top-0 flex items-center justify-between w-screen'>
-                <img className='w-16' src={logo} alt="Uber Logo" />
+                <div className='flex items-center gap-3'>
+                    <div className='rounded-xl bg-white/95 px-3 py-2 shadow-md backdrop-blur'>
+                        <Brand compact />
+                    </div>
+                    <span className='rounded-full bg-[#111] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#f5c400]'>
+                        Captain
+                    </span>
+                </div>
                 <div className='flex items-center gap-3'>
                     <img
                         className='h-10 w-10 rounded-full object-cover border-2 border-white shadow-lg'

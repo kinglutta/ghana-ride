@@ -10,28 +10,28 @@ const ConfirmRidePanel = ({ selectedVehicle, setConfirmRidePanel, setVehiclePane
             case 'car':
                 return {
                     image: car,
-                    name: 'UberGo',
+                    name: 'YenkoGo',
                     capacity: 4,
                     time: '2 mins away',
-                    price: '₹193.20',
+                    price: 'GH₵193.20',
                     description: 'Affordable, compact rides'
                 }
             case 'bike':
                 return {
                     image: bike,
-                    name: 'Moto',
+                    name: 'YenkoBike',
                     capacity: 1,
                     time: '3 mins away',
-                    price: '₹65.35',
+                    price: 'GH₵65.35',
                     description: 'Affordable motorcycle rides'
                 }
             case 'auto':
                 return {
                     image: auto,
-                    name: 'UberAuto',
+                    name: 'YenkoAuto',
                     capacity: 3,
                     time: '2 mins away',
-                    price: '₹118.86',
+                    price: 'GH₵118.86',
                     description: 'Affordable Auto rides'
                 }
             default:
@@ -55,7 +55,7 @@ const ConfirmRidePanel = ({ selectedVehicle, setConfirmRidePanel, setVehiclePane
                 <i className="ri-arrow-down-wide-fill text-3xl text-gray-200"></i>
             </h5>
 
-            <h3 className='text-2xl font-semibold mb-5'>Confirm your Ride</h3>
+            <h3 className='text-2xl font-semibold mb-5'>Confirm your YENKO Ride</h3>
 
             <div className='flex w-full items-center justify-between p-3 bg-white border-2 border-black rounded-xl mb-4'>
                 <img className='h-12' src={vehicleDetails.image} alt="" />
@@ -88,7 +88,7 @@ const ConfirmRidePanel = ({ selectedVehicle, setConfirmRidePanel, setVehiclePane
                     <i className="ri-currency-line text-lg"></i>
                     <div>
                         <h3 className='text-lg font-medium'>{vehicleDetails.price}</h3>
-                        <p className='text-sm -mt-1 text-gray-600'>Cash Payment</p>
+                        <p className='text-sm -mt-1 text-gray-600'>Cash or Mobile Money</p>
                     </div>
                 </div>
             </div>

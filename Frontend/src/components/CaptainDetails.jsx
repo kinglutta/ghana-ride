@@ -19,10 +19,12 @@ const CaptainDetails = () => {
                             e.target.src = generateCaptainAvatar({ fullname: { firstname: 'Captain' } });
                         }}
                     />
-                    <h4 className='text-lg font-medium capitalize'>{captain?.fullname?.firstname + " " + captain?.fullname?.lastname}</h4>
+                    <h4 className='text-lg font-medium capitalize'>
+                        {[captain?.fullname?.firstname, captain?.fullname?.lastname].filter(Boolean).join(' ') || 'YENKO Captain'}
+                    </h4>
                 </div>
                 <div>
-                    <h4 className='text-xl font-semibold'>₹{captain?.earnings || '0.00'}</h4>
+                    <h4 className='text-xl font-semibold'>GH₵{captain?.earnings || '0.00'}</h4>
                     <p className='text-sm text-gray-600'>Earned</p>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 /**
  * Notifications — in-app notification center
- * Yango-standard notification experience
+ * YENKO-standard notification experience
  */
 
 import React, { useState, useEffect } from 'react';

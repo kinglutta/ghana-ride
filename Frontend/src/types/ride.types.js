@@ -1,5 +1,5 @@
 /**
- * Ride types — JSDoc definitions adapted from adrianhajdin/uber patterns.
+ * YENKO ride types — JSDoc definitions for the ride domain.
  * Used for type safety in JavaScript. All data flows through MongoDB.
  */
 

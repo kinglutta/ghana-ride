@@ -1,5 +1,5 @@
 /**
- * CustomButton — reusable button component adapted from adrianhajdin/uber patterns.
+ * CustomButton — reusable YENKO button component.
  * Styled with Tailwind. Works on web (React + Vite).
  */
 

@@ -1,205 +1,208 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { CaptainDataContext } from '../context/CaptainContext'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useContext } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { CaptainDataContext } from '../context/CaptainContext'
+import AuthShell, { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
 
 const CaptainSignup = () => {
-
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-
   const [vehicleColor, setVehicleColor] = useState('')
   const [vehiclePlate, setVehiclePlate] = useState('')
   const [vehicleCapacity, setVehicleCapacity] = useState('')
   const [vehicleType, setVehicleType] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const { captain, setCaptain } = React.useContext(CaptainDataContext)
-
+  const { setCaptain } = useContext(CaptainDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
 
     try {
-      const captainData = {
-        fullname: {
-          firstname: firstName,
-          lastname: lastName
-        },
-        email: email,
-        password: password,
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/captains/register`, {
+        fullname: { firstname: firstName, lastname: lastName },
+        email,
+        password,
         vehicle: {
           color: vehicleColor,
           plate: vehiclePlate,
           capacity: vehicleCapacity,
-          vehicleType: vehicleType
-        }
-      }
-
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/captains/register`, captainData)
+          vehicleType,
+        },
+      })
 
       if (response.status === 201) {
-        const data = response.data
-        setCaptain(data.captain)
-        localStorage.setItem('token', data.token)
+        setCaptain(response.data.captain)
+        localStorage.setItem('token', response.data.token)
         navigate('/captain-home')
       }
-    } catch (error) {
-      console.error('Captain signup error:', error);
-      if (error.response?.status === 400) {
-        alert('Captain already exists or invalid data. Please try again.');
-      } else {
-        alert('Signup failed. Please check your connection and try again.');
-      }
+    } catch (err) {
+      setError(
+        err.response?.status === 400
+          ? 'A captain account with these details already exists, or your information is invalid.'
+          : 'We could not create your captain account right now. Please try again.'
+      )
     } finally {
       setIsLoading(false)
-      setEmail('')
-      setFirstName('')
-      setLastName('')
-      setPassword('')
-      setVehicleColor('')
-      setVehiclePlate('')
-      setVehicleCapacity('')
-      setVehicleType('')
     }
   }
+
   return (
-    <div className='py-5 px-5 h-screen flex flex-col justify-between'>
-      <div>
-        <img className='w-20 mb-3' src="https://www.svgrepo.com/show/505031/uber-driver.svg" alt="" />
+    <AuthShell
+      eyebrow='Captain Registration'
+      title='Drive with YENKO.'
+      subtitle='Join Ghana’s smartest ride network. Set your own hours and earn with confidence.'
+      footer={
+        <div className='space-y-3 text-center'>
+          <p>
+            Already a captain?{' '}
+            <Link to='/captain-login' className='font-bold text-[#111] underline decoration-[#f5c400] decoration-2 underline-offset-4'>
+              Sign in here
+            </Link>
+          </p>
+          <p className='text-xs leading-relaxed text-gray-400'>
+            Captain verification can be submitted from your dashboard after registration.
+          </p>
+        </div>
+      }
+    >
+      <form onSubmit={submitHandler} className='space-y-5'>
+        {error && (
+          <div className='rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700'>
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={(e) => {
-          submitHandler(e)
-        }}>
+        <fieldset className='space-y-5'>
+          <legend className='mb-3 text-xs font-bold uppercase tracking-[0.2em] text-gray-400'>Your details</legend>
+          <div>
+            <label className={authLabelClass} htmlFor='captain-name'>Full name</label>
+            <div className='flex gap-3'>
+              <input
+                id='captain-name'
+                required
+                className={authFieldClass}
+                type='text'
+                autoComplete='given-name'
+                placeholder='First name'
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+              <input
+                required
+                aria-label='Last name'
+                className={authFieldClass}
+                type='text'
+                autoComplete='family-name'
+                placeholder='Last name'
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <h3 className='text-lg w-full  font-medium mb-2'>What's our Captain's name</h3>
-          <div className='flex gap-4 mb-7'>
+          <div>
+            <label className={authLabelClass} htmlFor='captain-signup-email'>Email address</label>
             <input
+              id='captain-signup-email'
               required
-              className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
-              type="text"
-              placeholder='First name'
-              value={firstName}
-              onChange={(e) => {
-                setFirstName(e.target.value)
-              }}
-            />
-            <input
-              required
-              className='bg-[#eeeeee] w-1/2  rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
-              type="text"
-              placeholder='Last name'
-              value={lastName}
-              onChange={(e) => {
-                setLastName(e.target.value)
-              }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={authFieldClass}
+              type='email'
+              autoComplete='email'
+              placeholder='captain@example.com'
             />
           </div>
 
-          <h3 className='text-lg font-medium mb-2'>What's our Captain's email</h3>
-          <input
-            required
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-            }}
-            className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
-            type="email"
-            placeholder='email@example.com'
-          />
+          <div>
+            <label className={authLabelClass} htmlFor='captain-signup-password'>Create a password</label>
+            <input
+              id='captain-signup-password'
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={authFieldClass}
+              type='password'
+              autoComplete='new-password'
+              placeholder='At least 8 characters'
+            />
+          </div>
+        </fieldset>
 
-          <h3 className='text-lg font-medium mb-2'>Enter Password</h3>
-
-          <input
-            className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-            }}
-            required type="password"
-            placeholder='password'
-          />
-
-          <h3 className='text-lg font-medium mb-2'>Vehicle Information</h3>
-          <div className='flex gap-4 mb-7'>
+        <fieldset className='space-y-5 border-t border-gray-100 pt-6'>
+          <legend className='mb-3 text-xs font-bold uppercase tracking-[0.2em] text-gray-400'>Vehicle information</legend>
+          <div className='flex gap-3'>
             <input
               required
-              className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border text-lg placeholder:text-base'
-              type="text"
-              placeholder='Vehicle Color'
+              aria-label='Vehicle colour'
+              className={authFieldClass}
+              type='text'
+              placeholder='Vehicle colour'
               value={vehicleColor}
-              onChange={(e) => {
-                setVehicleColor(e.target.value)
-              }}
+              onChange={(e) => setVehicleColor(e.target.value)}
             />
             <input
               required
-              className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border text-lg placeholder:text-base'
-              type="text"
-              placeholder='Vehicle Plate'
+              aria-label='Vehicle plate'
+              className={authFieldClass}
+              type='text'
+              placeholder='Vehicle plate'
               value={vehiclePlate}
-              onChange={(e) => {
-                setVehiclePlate(e.target.value)
-              }}
+              onChange={(e) => setVehiclePlate(e.target.value)}
             />
           </div>
-          <div className='flex gap-4 mb-7'>
+          <div className='flex gap-3'>
             <input
               required
-              className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border text-lg placeholder:text-base'
-              type="number"
-              placeholder='Vehicle Capacity'
+              aria-label='Vehicle capacity'
+              className={authFieldClass}
+              type='number'
+              min='1'
+              placeholder='Seats'
               value={vehicleCapacity}
-              onChange={(e) => {
-                setVehicleCapacity(e.target.value)
-              }}
+              onChange={(e) => setVehicleCapacity(e.target.value)}
             />
             <select
               required
-              className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border text-lg placeholder:text-base'
+              aria-label='Vehicle type'
+              className={authFieldClass}
               value={vehicleType}
-              onChange={(e) => {
-                setVehicleType(e.target.value)
-              }}
+              onChange={(e) => setVehicleType(e.target.value)}
             >
-              <option value="" disabled>Select Vehicle Type</option>
-              <option value="car">Car</option>
-              <option value="auto">Auto</option>
-              <option value="moto">Moto</option>
+              <option value='' disabled>Select vehicle type</option>
+              <option value='car'>Car</option>
+              <option value='auto'>Auto</option>
+              <option value='moto'>Moto</option>
             </select>
           </div>
+        </fieldset>
 
-          <button
-            disabled={isLoading}
-            className={`font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg transition-all duration-200 flex justify-center items-center ${isLoading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-[#111] hover:bg-gray-800 text-white'
-              }`}
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Creating account...
-              </>
-            ) : (
-              'Create Captain Account'
-            )}
-          </button>
-
-        </form>
-        <p className='text-center'>Already have a account? <Link to='/captain-login' className='text-blue-600'>Login here</Link></p>
-      </div>
-      <div>
-        <p className='text-[10px] mt-6 leading-tight'>This site is protected by reCAPTCHA and the <span className='underline'>Google Privacy
-          Policy</span> and <span className='underline'>Terms of Service apply</span>.</p>
-      </div>
-    </div>
+        <button
+          type='submit'
+          disabled={isLoading}
+          className={`flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-base font-bold transition-all ${
+            isLoading ? 'cursor-not-allowed bg-gray-400' : 'bg-[#111] text-white hover:bg-gray-800'
+          }`}
+        >
+          {isLoading ? (
+            <>
+              <span className='mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white' />
+              Creating captain account…
+            </>
+          ) : (
+            'Create my Captain account'
+          )}
+        </button>
+      </form>
+    </AuthShell>
   )
 }
 

@@ -1,5 +1,5 @@
 /**
- * DriverCard — driver selection card adapted from adrianhajdin/uber patterns.
+ * DriverCard — YENKO captain selection card.
  * Shows driver photo, rating, fare, ETA, and car seats. Web-optimized (React + Tailwind).
  */
 

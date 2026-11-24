@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import LiveTracking from '../components/LiveTracking'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
 import RideCompleted from '../components/RideCompleted'
+import { Brand } from '../components/ui/YenkoShell'
 
 const Riding = () => {
     const location = useLocation()
@@ -59,7 +60,10 @@ const Riding = () => {
 
     return (
         <div className='h-screen'>
-            <Link to='/home' className='fixed right-2 top-2 h-10 w-10 bg-white flex items-center justify-center rounded-full'>
+            <div className='fixed left-3 top-3 z-20 rounded-xl bg-white/95 px-3 py-2 shadow-md backdrop-blur'>
+                <Brand compact />
+            </div>
+            <Link to='/home' title='Back to YENKO home' className='fixed right-3 top-3 z-20 h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md'>
                 <i className="text-lg font-medium ri-home-5-line"></i>
             </Link>
             <div className='h-1/2'>
@@ -71,8 +75,8 @@ const Riding = () => {
             </div>
             <div className='h-1/2 p-4'>
                 <div className='bg-green-50 p-4 rounded-lg mb-4'>
-                    <h2 className='text-xl font-semibold text-green-800 mb-2'>🚗 Ride in Progress</h2>
-                    <p className='text-green-600'>Your driver is taking you to your destination</p>
+                    <h2 className='text-xl font-semibold text-green-800 mb-2'>🚗 YENKO Ride in Progress</h2>
+                    <p className='text-green-600'>Your YENKO Captain is taking you to your destination</p>
                 </div>
 
                 <div className='flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-lg'>
@@ -109,14 +113,14 @@ const Riding = () => {
                     <div className='flex items-center gap-5 p-3'>
                         <i className="ri-currency-line text-green-600"></i>
                         <div>
-                            <h3 className='text-lg font-medium'>₹{ride?.fare || '0'}</h3>
+                            <h3 className='text-lg font-medium'>GH₵{ride?.fare || '0'}</h3>
                             <p className='text-sm -mt-1 text-gray-600'>Total Fare</p>
                         </div>
                     </div>
                 </div>
 
                 <div className='mt-4 p-3 bg-blue-50 rounded-lg text-center'>
-                    <p className='text-blue-800 font-medium'>🚗 Enjoy your ride!</p>
+                    <p className='text-blue-800 font-medium'>🚗 Enjoy your YENKO ride!</p>
                     <p className='text-blue-600 text-sm mt-1'>You'll be notified when you reach your destination</p>
                 </div>
             </div>

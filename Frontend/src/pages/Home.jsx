@@ -13,7 +13,7 @@ import { useContext } from 'react';
 import { UserDataContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import LiveTracking from '../components/LiveTracking';
-import logo from '../assets/logo.png'
+import { Brand } from '../components/ui/YenkoShell';
 import { generateUserAvatar } from '../utils/avatarGenerator'
 import SocketStatus from '../components/SocketStatus'
 
@@ -277,9 +277,11 @@ const Home = () => {
 
     return (
         <div className='h-screen relative overflow-hidden'>
-            {/* Header with logo, user avatar, and quick actions */}
+            {/* YENKO brand, user avatar and quick actions */}
             <div className='absolute left-5 top-5 z-20'>
-                <img className='w-16' src={logo} alt="YENKO Logo" />
+                <div className='rounded-xl bg-white/95 px-3 py-2 shadow-md backdrop-blur'>
+                    <Brand compact />
+                </div>
             </div>
             <div className='absolute right-5 top-5 z-20 flex items-center gap-3'>
                 <button

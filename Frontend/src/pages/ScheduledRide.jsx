@@ -1,6 +1,6 @@
 /**
  * ScheduledRide â€” book rides for a future date/time
- * Yango-standard scheduled ride experience
+ * YENKO-standard scheduled ride experience
  */
 
 import React, { useState, useEffect } from 'react';

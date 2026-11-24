@@ -1,5 +1,5 @@
 /**
- * SafetyPage â€” Yango-standard safety features
+ * SafetyPage â€” YENKO-standard safety features
  * SOS button, emergency contacts, trip sharing
  * Safety first â€” always visible, always accessible
  */

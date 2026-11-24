@@ -3,7 +3,7 @@ const Captain = require('../models/captain.model');
 
 /**
  * SurgePricingService — dynamic pricing based on demand vs supply
- * Yango-standard surge: when demand > supply, prices increase
+ * YENKO surge: when demand > supply, prices increase
  */
 class SurgePricingService {
     /**

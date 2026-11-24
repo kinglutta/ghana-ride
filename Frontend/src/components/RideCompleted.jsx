@@ -117,20 +117,20 @@ const RideCompleted = ({ ride, onClose }) => {
                     <div className='space-y-2'>
                         <div className='flex justify-between'>
                             <span>Base Fare</span>
-                            <span>₹{Math.round((ride?.fare || 0) * 0.7)}</span>
+                            <span>GH₵{Math.round((ride?.fare || 0) * 0.7)}</span>
                         </div>
                         <div className='flex justify-between'>
                             <span>Distance Charge</span>
-                            <span>₹{Math.round((ride?.fare || 0) * 0.2)}</span>
+                            <span>GH₵{Math.round((ride?.fare || 0) * 0.2)}</span>
                         </div>
                         <div className='flex justify-between'>
                             <span>Time Charge</span>
-                            <span>₹{Math.round((ride?.fare || 0) * 0.1)}</span>
+                            <span>GH₵{Math.round((ride?.fare || 0) * 0.1)}</span>
                         </div>
                         <div className='border-t pt-2 mt-2'>
                             <div className='flex justify-between font-semibold text-lg'>
                                 <span>Total Amount</span>
-                                <span className='text-green-600'>₹{ride?.fare || 0}</span>
+                                <span className='text-green-600'>GH₵{ride?.fare || 0}</span>
                             </div>
                         </div>
                     </div>
@@ -154,7 +154,7 @@ const RideCompleted = ({ ride, onClose }) => {
                                 Processing Payment...
                             </>
                         ) : (
-                            <>💳 Pay ₹{ride?.fare || 0} Now</>
+                            <>💳 Pay GH₵{ride?.fare || 0} Now</>
                         )}
                     </button>
 

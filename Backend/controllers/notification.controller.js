@@ -85,7 +85,7 @@ module.exports.registerPushToken = [
  */
 module.exports.getUnreadCount = async (req, res) => {
     try {
-        const Notification = require('../models/notification.model');
+        const { Notification } = require('../models/notification.model');
         const count = await Notification.countDocuments({
             user: req.user._id,
             isRead: false,

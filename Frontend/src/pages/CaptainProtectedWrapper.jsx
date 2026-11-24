@@ -2,64 +2,64 @@ import React, { useContext, useEffect, useState } from 'react'
 import { CaptainDataContext } from '../context/CaptainContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import AuthGateMessage from '../components/ui/AuthGateMessage'
 
-const CaptainProtectedWrapper = ({
-    children
-}) => {
-
+const CaptainProtectedWrapper = ({ children }) => {
     const token = localStorage.getItem('token')
     const navigate = useNavigate()
-    const { captain, setCaptain } = useContext(CaptainDataContext)
+    const { setCaptain } = useContext(CaptainDataContext)
     const [isLoading, setIsLoading] = useState(true)
-
-
-
+    const [error, setError] = useState('')
 
     useEffect(() => {
         if (!token) {
             navigate('/captain-login')
+            return
         }
 
+        let active = true
+
         axios.get(`${import.meta.env.VITE_API_URL}/captains/profile`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }).then(response => {
-            if (response.status === 200) {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then(response => {
+                if (!active) return
                 setCaptain(response.data.captain)
                 setIsLoading(false)
-            }
-        })
+            })
             .catch(err => {
-                console.log('Captain Auth error:', err.response?.data || err.message)
+                if (!active) return
+                const status = err.response?.status
 
-                // Clear token on any auth error (including invalid signature)
-                localStorage.removeItem('token')
-
-                // Show user-friendly message for token errors
-                if (err.response?.data?.error === 'INVALID_TOKEN') {
-                    console.log('Token signature invalid - redirecting to captain login')
+                if (status === 401 || status === 403) {
+                    localStorage.removeItem('token')
+                    navigate('/captain-login')
+                    return
                 }
 
-                navigate('/captain-login')
+                console.log('Captain session check unavailable:', err.message)
+                setError('We could not verify your YENKO Captain session right now.')
+                setIsLoading(false)
             })
-    }, [token])
 
-
+        return () => { active = false }
+    }, [token, navigate, setCaptain])
 
     if (isLoading) {
+        return <AuthGateMessage title='Loading Captain mode…' message='Preparing your YENKO fleet dashboard.' />
+    }
+
+    if (error) {
         return (
-            <div>Loading...</div>
+            <AuthGateMessage
+                title='Connection interrupted'
+                message={error}
+                onRetry={() => window.location.reload()}
+            />
         )
     }
 
-
-
-    return (
-        <>
-            {children}
-        </>
-    )
+    return <>{children}</>
 }
 
 export default CaptainProtectedWrapper

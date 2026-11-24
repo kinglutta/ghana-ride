@@ -25,105 +25,118 @@ import Chat from './pages/Chat'
 import DriverVerification from './pages/DriverVerification'
 import Disputes from './pages/Disputes'
 import SocketStatus from './components/SocketStatus'
+import YenkoShell from './components/ui/YenkoShell'
+import usePageTitle from './hooks/usePageTitle'
+
+/** Applies a YENKO browser title without adding page chrome (auth / ride screens). */
+const Titled = ({ title, children }) => {
+  usePageTitle(title)
+  return <>{children}</>
+}
+
+/** Wraps feature pages in the standard YENKO header + footer. */
+const Feature = ({ title, children }) => (
+  <YenkoShell title={title}>{children}</YenkoShell>
+)
 
 const App = () => {
   return (
     <div>
       <SocketStatus />
       <Routes>
-        <Route path='/' element={<Start />} />
-        <Route path='/login' element={<UserLogin />} />
-        <Route path='/signup' element={<UserSignup />} />
-        <Route path='/captain-login' element={<CaptainLogin />} />
-        <Route path='/captain-signup' element={<CaptainSignup />} />
+        <Route path='/' element={<Titled title="Welcome"><Start /></Titled>} />
+        <Route path='/login' element={<Titled title="Rider Login"><UserLogin /></Titled>} />
+        <Route path='/signup' element={<Titled title="Join YENKO"><UserSignup /></Titled>} />
+        <Route path='/captain-login' element={<Titled title="Captain Login"><CaptainLogin /></Titled>} />
+        <Route path='/captain-signup' element={<Titled title="Become a Captain"><CaptainSignup /></Titled>} />
         <Route path='/home' element={
           <UserProtectedWrapper>
-            <Home />
+            <Titled title="Book a Ride"><Home /></Titled>
           </UserProtectedWrapper>
         } />
         <Route path='/users/logout' element={
           <UserProtectedWrapper>
-            <UserLogout />
+            <Titled title="Signing Out"><UserLogout /></Titled>
           </UserProtectedWrapper>
         } />
         <Route path='/captain-home' element={
           <CaptainProtectedWrapper>
-            <CaptainHome />
+            <Titled title="Captain Home"><CaptainHome /></Titled>
           </CaptainProtectedWrapper>
         } />
         <Route path='/captains/logout' element={
           <CaptainProtectedWrapper>
-            <CaptainLogout />
+            <Titled title="Signing Out"><CaptainLogout /></Titled>
           </CaptainProtectedWrapper>
         } />
         <Route path='/captain-riding' element={
           <CaptainProtectedWrapper>
-            <CaptainRiding />
+            <Titled title="On a Ride"><CaptainRiding /></Titled>
           </CaptainProtectedWrapper>
         } />
         <Route path='/riding' element={
           <UserProtectedWrapper>
-            <Riding />
+            <Titled title="Your Ride"><Riding /></Titled>
           </UserProtectedWrapper>
         } />
         <Route path='/ride-history' element={
           <UserProtectedWrapper>
-            <RideHistory />
+            <Feature title="Ride History"><RideHistory /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/admin' element={
           <UserProtectedWrapper>
-            <AdminDashboard />
+            <Feature title="Fleet Dashboard"><AdminDashboard /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/payment' element={
           <UserProtectedWrapper>
-            <PaymentPage />
+            <Feature title="Payments"><PaymentPage /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/safety' element={
           <UserProtectedWrapper>
-            <SafetyPage />
+            <Feature title="Safety"><SafetyPage /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/driver-earnings' element={
           <UserProtectedWrapper>
-            <DriverEarnings />
+            <Feature title="Driver Earnings"><DriverEarnings /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/scheduled-rides/book' element={
           <UserProtectedWrapper>
-            <ScheduledRide />
+            <Feature title="Schedule a Ride"><ScheduledRide /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/scheduled-rides/my-rides' element={
           <UserProtectedWrapper>
-            <RideHistory />
+            <Feature title="My Scheduled Rides"><RideHistory /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/referrals' element={
           <UserProtectedWrapper>
-            <Referral />
+            <Feature title="Refer & Earn"><Referral /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/notifications' element={
           <UserProtectedWrapper>
-            <Notifications />
+            <Feature title="Notifications"><Notifications /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/chat/:rideId' element={
           <UserProtectedWrapper>
-            <Chat />
+            <Feature title="Ride Chat"><Chat /></Feature>
           </UserProtectedWrapper>
         } />
         <Route path='/driver-verification' element={
           <CaptainProtectedWrapper>
-            <DriverVerification />
+            <Feature title="Driver Verification"><DriverVerification /></Feature>
           </CaptainProtectedWrapper>
         } />
         <Route path='/disputes' element={
           <UserProtectedWrapper>
-            <Disputes />
+            <Feature title="Disputes & Support"><Disputes /></Feature>
           </UserProtectedWrapper>
         } />
       </Routes>

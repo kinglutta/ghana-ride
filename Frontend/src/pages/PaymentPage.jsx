@@ -1,6 +1,6 @@
 /**
  * PaymentPage â€” Mobile Money + Wallet payment hub
- * Yango-standard payment experience for Ghana market
+ * YENKO-standard payment experience for Ghana market
  * 100% free â€” no Stripe, no paid gateways
  */
 

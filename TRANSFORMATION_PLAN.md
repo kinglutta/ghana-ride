@@ -1,7 +1,7 @@
-# YENKO RIDE → YANGO STANDARD PLUS (TRANSFORMATION PLAN)
+# YENKO RIDE PLUS (TRANSFORMATION PLAN)
 
 ## Vision
-A 100% free-stack ride-hailing platform that exceeds Yango's standard for the Ghana/Africa market:
+A 100% free-stack ride-hailing platform that sets a new standard for the Ghana/Africa market:
 - **Mobile Money first** (MTN MoMo, Vodafone Cash, AirtelTigo Money) — no credit card dependency
 - **Safety first** (SOS, trip sharing, driver verification, emergency contacts)
 - **Multi-service** (Rides, Delivery, Courier, Bike Taxi)
@@ -10,13 +10,13 @@ A 100% free-stack ride-hailing platform that exceeds Yango's standard for the Gh
 
 ---
 
-## GAP ANALYSIS: YENKO RIDE vs YANGO
+## GAP ANALYSIS: YENKO RIDE → YENKO RIDE PLUS
 
-| Category | YENKO RIDE (Current) | Yango Standard | YENKO RIDE Plus (Target) |
-|----------|---------------------|----------------|--------------------------|
+| Category | YENKO RIDE (Current) | Global Benchmark | YENKO RIDE Plus (Target) |
+|----------|---------------------|------------------|--------------------------|
 | Platform | Web (React + Vite) | Mobile + Web | **PWA + Web** (installable) |
-| Maps | Leaflet + OSM | Google Maps | **Leaflet + OSM** (free) |
-| Routing | OSRM | Google Directions | **OSRM** (free) |
+| Maps | Leaflet + OSM | Paid map provider | **Leaflet + OSM** (free) |
+| Routing | OSRM | Paid directions API | **OSRM** (free) |
 | Payments | ❌ None | Cards + MoMo | **Mobile Money + Cash + Wallet** |
 | Auth | JWT + bcrypt | Phone + OTP + Email | **Phone OTP + Email + Social** |
 | Safety | ❌ None | SOS + Share Trip | **SOS + Emergency Contacts + Trip Share + Driver Verification** |
@@ -71,4 +71,4 @@ A 100% free-stack ride-hailing platform that exceeds Yango's standard for the Gh
 3. **Transparent Pricing** — Fare shown before booking, surge clearly marked
 4. **Driver Respect** — Earnings visible, payout requests easy, ratings fair
 5. **Works on Weak Networks** — Optimized for 3G, PWA for offline resilience
-6. **Zero API Costs** — No Google Maps, no Stripe, no paid auth
+6. **Zero API Costs** — No paid maps, no Stripe, no paid auth

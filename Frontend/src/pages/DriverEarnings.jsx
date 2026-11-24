@@ -1,6 +1,6 @@
 /**
  * DriverEarnings â€” Captain earnings dashboard
- * Yango-standard driver earnings with payout requests
+ * YENKO-standard driver earnings with payout requests
  */
 
 import React, { useState, useEffect } from 'react';
