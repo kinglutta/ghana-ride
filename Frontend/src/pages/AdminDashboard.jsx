@@ -18,6 +18,20 @@ const AdminDashboard = () => {
     });
     const [recentRides, setRecentRides] = useState([]);
     const [captains, setCaptains] = useState([]);
+    const [analytics, setAnalytics] = useState({
+        overview: {
+            totalUsers: 0,
+            totalRevenue: 0,
+            avgFare: 0,
+            totalRides: 0,
+            completedRides: 0,
+            cancelledRides: 0,
+            paidRideCount: 0,
+            platformRevenue: 0,
+        },
+        daily: [],
+        byVehicle: [],
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,7 +39,7 @@ const AdminDashboard = () => {
             try {
                 const token = localStorage.getItem('token');
                 // These endpoints need to be added to backend
-                const [statsRes, ridesRes, captainsRes] = await Promise.allSettled([
+                const [statsRes, ridesRes, captainsRes, analyticsOverviewRes, dailyRidesRes, revenueByVehicleRes] = await Promise.allSettled([
                     axios.get(`${import.meta.env.VITE_API_URL}/admin/stats`, {
                         headers: { Authorization: `Bearer ${token}` },
                     }),
@@ -35,11 +49,27 @@ const AdminDashboard = () => {
                     axios.get(`${import.meta.env.VITE_API_URL}/admin/captains`, {
                         headers: { Authorization: `Bearer ${token}` },
                     }),
+                    axios.get(`${import.meta.env.VITE_API_URL}/admin/analytics/overview`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`${import.meta.env.VITE_API_URL}/admin/analytics/daily-rides?days=14`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`${import.meta.env.VITE_API_URL}/admin/analytics/revenue-by-vehicle`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
                 ]);
 
                 if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
                 if (ridesRes.status === 'fulfilled') setRecentRides(ridesRes.value.data || []);
                 if (captainsRes.status === 'fulfilled') setCaptains(captainsRes.value.data || []);
+                if (analyticsOverviewRes.status === 'fulfilled') {
+                    setAnalytics((prev) => ({ ...prev, overview: analyticsOverviewRes.value.data }));
+                }
+                if (dailyRidesRes.status === 'fulfilled') setAnalytics((prev) => ({ ...prev, daily: dailyRidesRes.value.data || [] }));
+                if (revenueByVehicleRes.status === 'fulfilled') {
+                    setAnalytics((prev) => ({ ...prev, byVehicle: revenueByVehicleRes.value.data || [] }));
+                }
             } catch (err) {
                 console.error('Admin dashboard error:', err);
             } finally {
@@ -86,6 +116,77 @@ const AdminDashboard = () => {
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Total Earnings</div>
                     <div className="text-3xl font-bold text-gray-900">{formatFare(stats.totalEarnings)}</div>
+                </div>
+            </div>
+
+            {/* Analytics & Reports */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Analytics & Reports</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Total Users</div>
+                        <div className="text-2xl font-bold text-gray-900">{analytics.overview.totalUsers}</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Total Revenue</div>
+                        <div className="text-2xl font-bold text-gray-900">{formatFare(analytics.overview.totalRevenue)}</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Avg Fare</div>
+                        <div className="text-2xl font-bold text-gray-900">{formatFare(analytics.overview.avgFare)}</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Platform Revenue</div>
+                        <div className="text-2xl font-bold text-gray-900">{formatFare(analytics.overview.platformRevenue)}</div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 className="font-bold text-gray-900 mb-4">Rides per Day (Last 14 Days)</h3>
+                        {analytics.daily.length === 0 ? (
+                            <div className="text-gray-500">No ride data yet</div>
+                        ) : (
+                            <div className="flex items-end gap-2 h-44">
+                                {analytics.daily.map((day) => {
+                                    const max = Math.max(...analytics.daily.map((d) => d.rides), 1);
+                                    return (
+                                        <div key={day._id} className="flex-1 flex flex-col items-center gap-1">
+                                            <div className="text-xs font-bold text-gray-900">{day.rides}</div>
+                                            <div
+                                                className="w-full bg-black rounded-t-lg"
+                                                style={{ height: `${Math.max((day.rides / max) * 140, day.rides > 0 ? 8 : 2)}px` }}
+                                            />
+                                            <div className="text-xs text-gray-500">{String(day._id).slice(5)}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900 mb-4">Revenue by Vehicle</h3>
+                        {analytics.byVehicle.length === 0 ? (
+                            <div className="text-gray-500">No revenue data yet</div>
+                        ) : (
+                            <div className="space-y-3">
+                                {analytics.byVehicle.map((v) => {
+                                    const maxRevenue = Math.max(...analytics.byVehicle.map((x) => x.revenue), 1);
+                                    return (
+                                        <div key={v._id}>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="font-medium text-gray-900 capitalize">{v._id}</span>
+                                                <span className="font-bold text-gray-900">{formatFare(v.revenue)}</span>
+                                            </div>
+                                            <div className="w-full bg-gray-100 rounded-full h-2">
+                                                <div className="bg-black h-2 rounded-full" style={{ width: `${(v.revenue / maxRevenue) * 100}%` }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

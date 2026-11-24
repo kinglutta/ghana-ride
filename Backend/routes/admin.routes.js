@@ -20,4 +20,19 @@ router.get('/captains',
     adminController.getCaptains
 )
 
+router.get('/analytics/overview',
+    authMiddleware.authUser,
+    adminController.getAnalyticsOverview
+)
+
+router.get('/analytics/daily-rides',
+    authMiddleware.authUser,
+    adminController.getDailyRides
+)
+
+router.get('/analytics/revenue-by-vehicle',
+    authMiddleware.authUser,
+    adminController.getRevenueByVehicle
+)
+
 module.exports = router;
