@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "brand:audit": "node scripts/brand-audit.js"
+  },
   "dependencies": {
     "socket.io-client": "^4.8.1"
   }

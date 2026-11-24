@@ -1,20 +1,22 @@
-# ðŸš— YENKO RIDE - Full Stack Ride Sharing Application
+# 🚗 YENKO RIDE — Ghana’s Free Ride Platform
 
-A comprehensive ride-sharing platform built with modern web technologies, featuring real-time communication, location services, and secure authentication. This application provides both user and driver (captain) interfaces with live ride tracking and management.
+A complete ride platform built with modern web technologies: real-time tracking, open maps, fair fares and secure authentication. Riders book in seconds, Captains earn on their own schedule, and Operations manages the fleet from one command centre.
 
-> See [Unified Onboarding](docs/ONBOARDING.md) for the single rider/captain/operations sign-in flow and the admin invite-code setup.
+> See [Unified Onboarding](docs/ONBOARDING.md) for the single rider/captain/operations sign-in flow and the Operations access-code setup.
 
-**ðŸ“± MOBILE-OPTIMIZED:** This application is designed and optimized for mobile devices. For the best experience, please view on mobile or use your browser's mobile view (F12 â†’ Toggle Device Toolbar).
+> See [Brand & Voice Guide](docs/BRAND.md) for YENKO naming, tone and the automated brand audit.
 
-## ðŸŒŸ Live Demo
+**📱 MOBILE-OPTIMIZED:** This application is designed and optimized for mobile devices. For the best experience, please view on mobile or use your browser's mobile view (F12 → Toggle Device Toolbar).
 
-- **ðŸ“± Frontend (Mobile-Optimized):** [https://yenkoroide.vercel.app/](https://yenkoroide.vercel.app/)
-- **âš¡ Backend API:** [https://yenkoroide-backend.onrender.com](https://yenkoroide-backend.onrender.com)
-- **ðŸ“š API Health Check:** [https://yenkoroide-backend.onrender.com/health](https://yenkoroide-backend.onrender.com/health)
+## 🌟 Live Demo
 
-> **ðŸ’¡ Best Experience:** Open the frontend link on your mobile device or use Chrome DevTools mobile view for optimal experience.
+- **📱 Frontend (Mobile-Optimized):** [https://yenkoroide.vercel.app/](https://yenkoroide.vercel.app/)
+- **⚡ Backend API:** [https://yenkoroide-backend.onrender.com](https://yenkoroide-backend.onrender.com)
+- **📚 API Health Check:** [https://yenkoroide-backend.onrender.com/health](https://yenkoroide-backend.onrender.com/health)
 
-## ðŸ“± Demo Video
+> **💡 Best Experience:** Open the frontend link on your mobile device or use Chrome DevTools mobile view for optimal experience.
+
+## 📱 Demo Video
 
 
 
@@ -24,9 +26,9 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 
 ---
 
-## ðŸš€ Features
+## 🚀 Features
 
-### ðŸ‘¥ User Features
+### 👥 Rider Features
 
 - **User Registration & Authentication** - Secure signup/login with JWT tokens
 - **Real-time Ride Booking** - Book rides with live driver tracking
@@ -37,7 +39,7 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Ride History** - View past rides and receipts
 - **Payment Integration** - Secure payment processing (simulated)
 
-### ðŸš• Captain (Driver) Features
+### 🚕 Captain Features
 
 - **Captain Registration** - Register with vehicle details and documentation
 - **Real-time Location Updates** - Automatic location broadcasting to users
@@ -46,7 +48,7 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Earnings Dashboard** - Track daily/weekly earnings and ride statistics
 - **Status Management** - Toggle between active/inactive status
 
-### ðŸ”§ Technical Features
+### 🔧 Technical Features
 
 - **Real-time Communication** - Socket.IO for instant updates and notifications
 - **Geospatial Queries** - MongoDB geospatial indexing for location-based searches
@@ -58,7 +60,7 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 
 ---
 
-## ðŸ› ï¸ Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend Technologies
 
@@ -102,110 +104,110 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 
 ---
 
-## ðŸ“ Detailed Project Structure
+## 📁 Detailed Project Structure
 
 ```
 yenko-ride/
-â”œâ”€â”€ Backend/                           # Node.js/Express backend application
-â”‚   â”œâ”€â”€ config/
-â”‚   â”‚   â””â”€â”€ connectToDb.js            # MongoDB connection configuration
-â”‚   â”œâ”€â”€ controllers/                   # Request handlers and business logic
-â”‚   â”‚   â”œâ”€â”€ user.controller.js        # User authentication, profile, logout
-â”‚   â”‚   â”œâ”€â”€ captain.controller.js     # Captain auth, profile, location updates
-â”‚   â”‚   â”œâ”€â”€ ride.controller.js        # Ride creation, confirmation, management
-â”‚   â”‚   â””â”€â”€ map.controller.js         # Maps, geocoding, distance calculation
-â”‚   â”œâ”€â”€ models/                       # Mongoose database schemas
-â”‚   â”‚   â”œâ”€â”€ user.model.js            # User schema with authentication methods
-â”‚   â”‚   â”œâ”€â”€ captain.model.js         # Captain schema with vehicle details
-â”‚   â”‚   â”œâ”€â”€ ride.model.js            # Ride schema with status tracking
-â”‚   â”‚   â””â”€â”€ blacklistToken.model.js  # JWT token blacklist for logout
-â”‚   â”œâ”€â”€ routes/                       # Express route definitions
-â”‚   â”‚   â”œâ”€â”€ user.routes.js           # User registration, login, profile routes
-â”‚   â”‚   â”œâ”€â”€ captain.routes.js        # Captain registration, login, location routes
-â”‚   â”‚   â”œâ”€â”€ ride.routes.js           # Ride creation, confirmation, status routes
-â”‚   â”‚   â””â”€â”€ maps.routes.js           # Maps, geocoding, autocomplete routes
-â”‚   â”œâ”€â”€ services/                     # Business logic and external API calls
-â”‚   â”‚   â”œâ”€â”€ user.service.js          # User-related business operations
-â”‚   â”‚   â”œâ”€â”€ captain.service.js       # Captain-related business operations
-â”‚   â”‚   â”œâ”€â”€ ride.service.js          # Ride management and fare calculation
-â”‚   â”‚   â””â”€â”€ maps.service.js          # OpenStreetMap (Nominatim + OSRM) API integration
-â”‚   â”œâ”€â”€ middlewares/                  # Custom Express middleware
-â”‚   â”‚   â””â”€â”€ auth.middlewares.js      # JWT authentication and authorization
-â”‚   â”œâ”€â”€ utils/                        # Utility functions and helpers
-â”‚   â”‚   â””â”€â”€ distanceCalculator.js    # Distance and fare calculation utilities
-â”‚   â”œâ”€â”€ app.js                       # Express application configuration
-â”‚   â”œâ”€â”€ server.js                    # Server entry point with Socket.IO setup
-â”‚   â”œâ”€â”€ package.json                 # Backend dependencies and scripts
-â”‚   â””â”€â”€ render.yaml                  # Render deployment configuration
-â”‚
-â”œâ”€â”€ Frontend/                         # React frontend application
-â”‚   â”œâ”€â”€ src/
-â”‚   â”‚   â”œâ”€â”€ components/              # Reusable React components
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainDetails.jsx   # Captain profile and statistics display
-â”‚   â”‚   â”‚   â”œâ”€â”€ ConfirmRide.jsx      # Ride confirmation component
-â”‚   â”‚   â”‚   â”œâ”€â”€ ConfirmRidePanel.jsx # Ride confirmation panel with details
-â”‚   â”‚   â”‚   â”œâ”€â”€ ConfirmRidePopUp.jsx # Modal for ride confirmation
-â”‚   â”‚   â”‚   â”œâ”€â”€ FinishRide.jsx       # Ride completion interface
-â”‚   â”‚   â”‚   â”œâ”€â”€ LiveTracking.jsx     # Real-time location tracking map
-â”‚   â”‚   â”‚   â”œâ”€â”€ LocationSearchPanel.jsx # Location search with autocomplete
-â”‚   â”‚   â”‚   â”œâ”€â”€ LookingForDriver.jsx # Driver search loading animation
-â”‚   â”‚   â”‚   â”œâ”€â”€ MapFallback.jsx      # Fallback component when maps fail
-â”‚   â”‚   â”‚   â”œâ”€â”€ RideCompleted.jsx    # Ride completion success screen
-â”‚   â”‚   â”‚   â”œâ”€â”€ RidePopUp.jsx        # Ride request notification popup
-â”‚   â”‚   â”‚   â”œâ”€â”€ SocketStatus.jsx     # Real-time socket connection indicator
-â”‚   â”‚   â”‚   â”œâ”€â”€ SocketTester.jsx     # Socket connection testing component
-â”‚   â”‚   â”‚   â”œâ”€â”€ Spinner.jsx          # Loading spinner component
-â”‚   â”‚   â”‚   â”œâ”€â”€ Toast.jsx            # Toast notification system
-â”‚   â”‚   â”‚   â”œâ”€â”€ VehiclePanel.jsx     # Vehicle selection with pricing
-â”‚   â”‚   â”‚   â””â”€â”€ WaitingForDriver.jsx # Driver arrival waiting screen
-â”‚   â”‚   â”œâ”€â”€ pages/                   # Page components (route handlers)
-â”‚   â”‚   â”‚   â”œâ”€â”€ Start.jsx            # Landing page with app introduction
-â”‚   â”‚   â”‚   â”œâ”€â”€ UserLogin.jsx        # User authentication login form
-â”‚   â”‚   â”‚   â”œâ”€â”€ UserSignup.jsx       # User registration form
-â”‚   â”‚   â”‚   â”œâ”€â”€ UserLogout.jsx       # User logout handler
-â”‚   â”‚   â”‚   â”œâ”€â”€ UserProtectedWrapper.jsx # Protected route wrapper for users
-â”‚   â”‚   â”‚   â”œâ”€â”€ Home.jsx             # User dashboard with ride booking
-â”‚   â”‚   â”‚   â”œâ”€â”€ Riding.jsx           # Active ride tracking page
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainLogin.jsx     # Captain authentication login form
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainSignup.jsx    # Captain registration with vehicle details
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainLogout.jsx    # Captain logout handler
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainProtectedWrapper.jsx # Protected route wrapper for captains
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainHome.jsx      # Captain dashboard with ride requests
-â”‚   â”‚   â”‚   â””â”€â”€ CaptainRiding.jsx    # Captain active ride management
-â”‚   â”‚   â”œâ”€â”€ context/                 # React Context API providers
-â”‚   â”‚   â”‚   â”œâ”€â”€ UserContext.jsx      # User state management and authentication
-â”‚   â”‚   â”‚   â”œâ”€â”€ CaptainContext.jsx   # Captain state management and authentication
-â”‚   â”‚   â”‚   â””â”€â”€ SocketContext.jsx    # Socket.IO connection and event management
-â”‚   â”‚   â”œâ”€â”€ hooks/                   # Custom React hooks
-â”‚   â”‚   â”‚   â””â”€â”€ useToast.js         # Toast notification management hook
-â”‚   â”‚   â”œâ”€â”€ utils/                   # Utility functions and helpers
-â”‚   â”‚   â”‚   â”œâ”€â”€ avatarGenerator.js   # Dynamic avatar generation utilities
-â”‚   â”‚   â”‚   â””â”€â”€ authUtils.js        # Authentication helper functions
-â”‚   â”‚   â”œâ”€â”€ assets/                  # Static assets and media files
-â”‚   â”‚   â”‚   â”œâ”€â”€ logo.png            # Application logo
-â”‚   â”‚   â”‚   â”œâ”€â”€ homepage-cover.jpg   # Homepage background image
-â”‚   â”‚   â”‚   â”œâ”€â”€ car.png             # Car vehicle icon
-â”‚   â”‚   â”‚   â”œâ”€â”€ bike.png            # Motorcycle vehicle icon
-â”‚   â”‚   â”‚   â””â”€â”€ auto.png            # Auto-rickshaw vehicle icon
-â”‚   â”‚   â”œâ”€â”€ App.jsx                 # Main application component with routing
-â”‚   â”‚   â”œâ”€â”€ main.jsx                # Application entry point with providers
-â”‚   â”‚   â””â”€â”€ index.css               # Global styles and Tailwind imports
-â”‚   â”œâ”€â”€ public/                     # Public static assets
-â”‚   â”‚   â”œâ”€â”€ index.html              # HTML template
-â”‚   â”‚   â””â”€â”€ favicon.ico             # Application favicon
-â”‚   â”œâ”€â”€ package.json                # Frontend dependencies and scripts
-â”‚   â”œâ”€â”€ vite.config.js              # Vite build tool configuration
-â”‚   â”œâ”€â”€ tailwind.config.js          # Tailwind CSS configuration
-â”‚   â””â”€â”€ eslint.config.js            # ESLint linting configuration
-â”‚
-â”œâ”€â”€ README.md                       # Comprehensive project documentation
-â”œâ”€â”€ .gitignore                      # Git ignore patterns
-â””â”€â”€ package.json                    # Root workspace package.json
+├── Backend/                           # Node.js/Express backend application
+│   ├── config/
+│   │   └── connectToDb.js            # MongoDB connection configuration
+│   ├── controllers/                   # Request handlers and business logic
+│   │   ├── user.controller.js        # User authentication, profile, logout
+│   │   ├── captain.controller.js     # Captain auth, profile, location updates
+│   │   ├── ride.controller.js        # Ride creation, confirmation, management
+│   │   └── map.controller.js         # Maps, geocoding, distance calculation
+│   ├── models/                       # Mongoose database schemas
+│   │   ├── user.model.js            # User schema with authentication methods
+│   │   ├── captain.model.js         # Captain schema with vehicle details
+│   │   ├── ride.model.js            # Ride schema with status tracking
+│   │   └── blacklistToken.model.js  # JWT token blacklist for logout
+│   ├── routes/                       # Express route definitions
+│   │   ├── user.routes.js           # User registration, login, profile routes
+│   │   ├── captain.routes.js        # Captain registration, login, location routes
+│   │   ├── ride.routes.js           # Ride creation, confirmation, status routes
+│   │   └── maps.routes.js           # Maps, geocoding, autocomplete routes
+│   ├── services/                     # Business logic and external API calls
+│   │   ├── user.service.js          # User-related business operations
+│   │   ├── captain.service.js       # Captain-related business operations
+│   │   ├── ride.service.js          # Ride management and fare calculation
+│   │   └── maps.service.js          # OpenStreetMap (Nominatim + OSRM) API integration
+│   ├── middlewares/                  # Custom Express middleware
+│   │   └── auth.middlewares.js      # JWT authentication and authorization
+│   ├── utils/                        # Utility functions and helpers
+│   │   └── distanceCalculator.js    # Distance and fare calculation utilities
+│   ├── app.js                       # Express application configuration
+│   ├── server.js                    # Server entry point with Socket.IO setup
+│   ├── package.json                 # Backend dependencies and scripts
+│   └── render.yaml                  # Render deployment configuration
+│
+├── Frontend/                         # React frontend application
+│   ├── src/
+│   │   ├── components/              # Reusable React components
+│   │   │   ├── CaptainDetails.jsx   # Captain profile and statistics display
+│   │   │   ├── ConfirmRide.jsx      # Ride confirmation component
+│   │   │   ├── ConfirmRidePanel.jsx # Ride confirmation panel with details
+│   │   │   ├── ConfirmRidePopUp.jsx # Modal for ride confirmation
+│   │   │   ├── FinishRide.jsx       # Ride completion interface
+│   │   │   ├── LiveTracking.jsx     # Real-time location tracking map
+│   │   │   ├── LocationSearchPanel.jsx # Location search with autocomplete
+│   │   │   ├── LookingForDriver.jsx # Driver search loading animation
+│   │   │   ├── MapFallback.jsx      # Fallback component when maps fail
+│   │   │   ├── RideCompleted.jsx    # Ride completion success screen
+│   │   │   ├── RidePopUp.jsx        # Ride request notification popup
+│   │   │   ├── SocketStatus.jsx     # Real-time socket connection indicator
+│   │   │   ├── SocketTester.jsx     # Socket connection testing component
+│   │   │   ├── Spinner.jsx          # Loading spinner component
+│   │   │   ├── Toast.jsx            # Toast notification system
+│   │   │   ├── VehiclePanel.jsx     # Vehicle selection with pricing
+│   │   │   └── WaitingForDriver.jsx # Driver arrival waiting screen
+│   │   ├── pages/                   # Page components (route handlers)
+│   │   │   ├── Start.jsx            # Landing page with app introduction
+│   │   │   ├── UserLogin.jsx        # User authentication login form
+│   │   │   ├── UserSignup.jsx       # User registration form
+│   │   │   ├── UserLogout.jsx       # User logout handler
+│   │   │   ├── UserProtectedWrapper.jsx # Protected route wrapper for users
+│   │   │   ├── Home.jsx             # User dashboard with ride booking
+│   │   │   ├── Riding.jsx           # Active ride tracking page
+│   │   │   ├── CaptainLogin.jsx     # Captain authentication login form
+│   │   │   ├── CaptainSignup.jsx    # Captain registration with vehicle details
+│   │   │   ├── CaptainLogout.jsx    # Captain logout handler
+│   │   │   ├── CaptainProtectedWrapper.jsx # Protected route wrapper for captains
+│   │   │   ├── CaptainHome.jsx      # Captain dashboard with ride requests
+│   │   │   └── CaptainRiding.jsx    # Captain active ride management
+│   │   ├── context/                 # React Context API providers
+│   │   │   ├── UserContext.jsx      # User state management and authentication
+│   │   │   ├── CaptainContext.jsx   # Captain state management and authentication
+│   │   │   └── SocketContext.jsx    # Socket.IO connection and event management
+│   │   ├── hooks/                   # Custom React hooks
+│   │   │   └── useToast.js         # Toast notification management hook
+│   │   ├── utils/                   # Utility functions and helpers
+│   │   │   ├── avatarGenerator.js   # Dynamic avatar generation utilities
+│   │   │   └── authUtils.js        # Authentication helper functions
+│   │   ├── assets/                  # Static assets and media files
+│   │   │   ├── logo.png            # Application logo
+│   │   │   ├── homepage-cover.jpg   # Homepage background image
+│   │   │   ├── car.png             # Car vehicle icon
+│   │   │   ├── bike.png            # Motorcycle vehicle icon
+│   │   │   └── auto.png            # Auto-rickshaw vehicle icon
+│   │   ├── App.jsx                 # Main application component with routing
+│   │   ├── main.jsx                # Application entry point with providers
+│   │   └── index.css               # Global styles and Tailwind imports
+│   ├── public/                     # Public static assets
+│   │   ├── index.html              # HTML template
+│   │   └── favicon.ico             # Application favicon
+│   ├── package.json                # Frontend dependencies and scripts
+│   ├── vite.config.js              # Vite build tool configuration
+│   ├── tailwind.config.js          # Tailwind CSS configuration
+│   └── eslint.config.js            # ESLint linting configuration
+│
+├── README.md                       # Comprehensive project documentation
+├── .gitignore                      # Git ignore patterns
+└── package.json                    # Root workspace package.json
 ```
 
 ---
 
-## ðŸ”§ Frontend Architecture
+## 🔧 Frontend Architecture
 
 ### Component Structure
 
@@ -310,7 +312,7 @@ The frontend follows a modular component architecture with clear separation of c
 
 ---
 
-## ðŸ“š API Documentation
+## 📚 API Documentation
 
 ### Base URLs
 
@@ -327,7 +329,7 @@ Authorization: Bearer <your-jwt-token>
 
 ---
 
-## ðŸ‘¥ User API Endpoints
+## 👥 User API Endpoints
 
 ### 1. User Registration
 
@@ -444,7 +446,7 @@ Authorization: Bearer <token>
 
 ---
 
-## ðŸš• Captain API Endpoints
+## 🚕 Captain API Endpoints
 
 ### 1. Captain Registration
 
@@ -628,7 +630,7 @@ Authorization: Bearer <token>
 
 ---
 
-## ðŸš— Ride API Endpoints
+## 🚗 Ride API Endpoints
 
 ### 1. Get Fare Estimate
 
@@ -825,7 +827,7 @@ Authorization: Bearer <token>
 
 ---
 
-## ðŸ—ºï¸ Maps API Endpoints
+## 🗺️ Maps API Endpoints
 
 ### 1. Get Coordinates
 
@@ -919,7 +921,7 @@ input=Mumbai Central
 
 ---
 
-## ðŸ”Œ Socket.IO Events
+## 🔌 Socket.IO Events
 
 ### Client to Server Events
 
@@ -998,7 +1000,7 @@ socket.on("ride-ended", (ride) => {
 
 ---
 
-## ðŸ“‹ Prerequisites
+## 📋 Prerequisites
 
 Before running this application, make sure you have the following installed:
 
@@ -1010,7 +1012,7 @@ Before running this application, make sure you have the following installed:
 
 ---
 
-## âš¡ Quick Start
+## ⚡ Quick Start
 
 ### 1. Clone the Repository
 
@@ -1095,7 +1097,7 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
-## ðŸš€ Deployment
+## 🚀 Deployment
 
 ### Backend Deployment (Render)
 
@@ -1148,24 +1150,24 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
-## ðŸ“± Mobile Usage Guide
+## 📱 Mobile Usage Guide
 
 This application is specifically designed for mobile devices. Here's how to get the best experience:
 
-### ðŸ”§ Desktop Testing (Mobile View)
+### 🔧 Desktop Testing (Mobile View)
 
 1. **Open Chrome DevTools** (F12)
-2. **Click the device toggle** (ðŸ“± icon) or press `Ctrl+Shift+M`
+2. **Click the device toggle** (📱 icon) or press `Ctrl+Shift+M`
 3. **Select a mobile device** (iPhone 12 Pro, Pixel 5, etc.)
 4. **Visit your deployed frontend URL**
 
-### ðŸ“± Mobile Device (Recommended)
+### 📱 Mobile Device (Recommended)
 
 1. **Open your mobile browser** (Chrome, Safari, etc.)
 2. **Visit your deployed frontend URL**
 3. **Add to Home Screen** for app-like experience
 
-### âœ¨ Features Optimized for Mobile
+### ✨ Features Optimized for Mobile
 
 - **Touch-friendly interface** with large tap targets
 - **Swipe gestures** for panel interactions
@@ -1175,7 +1177,7 @@ This application is specifically designed for mobile devices. Here's how to get 
 
 ---
 
-## ðŸ§ª Testing
+## 🧪 Testing
 
 ### Running Tests
 
@@ -1218,7 +1220,7 @@ npm test
 
 ---
 
-## ðŸ”§ Development
+## 🔧 Development
 
 ### Project Scripts
 
@@ -1261,7 +1263,7 @@ npm run lint       # Run ESLint
 
 ---
 
-## ðŸ”’ Security Features
+## 🔒 Security Features
 
 ### Authentication & Authorization
 
@@ -1287,7 +1289,7 @@ npm run lint       # Run ESLint
 
 ---
 
-## ðŸ› Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
@@ -1362,7 +1364,7 @@ VITE_DEBUG=true
 
 ---
 
-## ðŸ¤ Contributing
+## 🤝 Contributing
 
 We welcome contributions to improve this YENKO RIDE project!
 
@@ -1412,13 +1414,13 @@ We welcome contributions to improve this YENKO RIDE project!
 
 ---
 
-## ðŸ“„ License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## ðŸ‘¨â€ðŸ’» Author
+## 👨‍💻 Author
 
 **Your Name**
 
@@ -1428,7 +1430,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## ðŸ™ Acknowledgments
+## 🙏 Acknowledgments
 
 - **React Team** - For the amazing React framework
 - **Express.js** - For the robust backend framework
@@ -1440,7 +1442,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## ðŸ“Š Project Stats
+## 📊 Project Stats
 
 - **Total Lines of Code:** ~15,000+
 - **Components:** 20+ React components
@@ -1451,6 +1453,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**â­ If you found this project helpful, please give it a star on GitHub!**
+**⭐ If you found this project helpful, please give it a star on GitHub!**
 
-**ðŸ”— Live Demo:** [https://yenkoroide.vercel.app/](https://yenkoroide.vercel.app/)
+**🔗 Live Demo:** [https://yenkoroide.vercel.app/](https://yenkoroide.vercel.app/)
