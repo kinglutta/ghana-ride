@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import LiveTracking from '../components/LiveTracking';
 import { Brand } from '../components/ui/YenkoShell';
 import { generateUserAvatar } from '../utils/avatarGenerator'
-import SocketStatus from '../components/SocketStatus'
 import { getToken } from '../lib/authToken';
 
 const Home = () => {
@@ -35,9 +34,18 @@ const Home = () => {
     const [pickupSuggestions, setPickupSuggestions] = useState([])
     const [destinationSuggestions, setDestinationSuggestions] = useState([])
     const [activeField, setActiveField] = useState(null)
-    const [fare, setFare] = useState({})
+    const [fares, setFares] = useState(null)
+    const [fareLoading, setFareLoading] = useState(false)
+    const [tripError, setTripError] = useState('')
+    const [noCaptains, setNoCaptains] = useState(false)
+    const [captainLocation, setCaptainLocation] = useState(null)
+    const [paymentMethod, setPaymentMethod] = useState('cash')
     const [vehicleType, setVehicleType] = useState(null)
     const [ride, setRide] = useState(null)
+    const rideRef = useRef(null)
+
+    rideRef.current = ride
+    const selectedFare = fares?.fares?.[vehicleType] || null
 
     const navigate = useNavigate()
 
@@ -45,39 +53,57 @@ const Home = () => {
     const { user } = useContext(UserDataContext)
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit("join", { userType: "user", userId: user._id, token: getToken('rider') })
+        if (!socket || !user) return
 
-            // Set up event listeners
-            const handleRideConfirmed = (ride) => {
-                console.log('Ride confirmed:', ride);
-                setVehicleFound(false)
-                setWaitingForDriver(true)
-                setRide(ride)
+        // Identity is verified from the token by the server; userType is kept
+        // only for older clients that still read it.
+        socket.emit('join', { userType: 'user', userId: user._id, token: getToken('rider') })
+
+        const handleRideConfirmed = (assigned) => {
+            setVehicleFound(false)
+            setNoCaptains(false)
+            setWaitingForDriver(true)
+            setRide(assigned)
+        }
+
+        const handleRideStarted = (started) => {
+            setWaitingForDriver(false)
+            navigate('/riding', { state: { ride: started } })
+        }
+
+        const handleNoCaptains = (data) => {
+            setNoCaptains(true)
+            setTripError(data?.message || 'No Captain nearby yet. We are still looking.')
+        }
+
+        const handleCancelled = () => {
+            setWaitingForDriver(false)
+            setVehicleFound(false)
+            setRide(null)
+            setTripError('This ride was cancelled. You can request another one.')
+        }
+
+        const handleCaptainLocationUpdate = (data) => {
+            // The server scopes ride events to participants; still ignore
+            // positions that belong to another active ride.
+            if (!rideRef.current || (data?.rideId && String(data.rideId) !== String(rideRef.current._id))) return
+            const location = data?.location || data
+            if (location?.ltd && location?.lng) {
+                setCaptainLocation({ lat: location.ltd, lng: location.lng })
             }
+        }
 
-            const handleRideStarted = (ride) => {
-                console.log("Ride started:", ride)
-                setWaitingForDriver(false)
-                navigate('/riding', { state: { ride } })
-            }
+        const handlers = {
+            'ride-confirmed': handleRideConfirmed,
+            'ride-started': handleRideStarted,
+            'no-captains-nearby': handleNoCaptains,
+            'ride-cancelled': handleCancelled,
+            'captain-location-update': handleCaptainLocationUpdate,
+        }
 
-            const handleCaptainLocationUpdate = (data) => {
-                console.log('Captain location update:', data);
-                // Update captain location on map if needed
-            }
-
-            // Add event listeners
-            socket.on('ride-confirmed', handleRideConfirmed)
-            socket.on('ride-started', handleRideStarted)
-            socket.on('captain-location-update', handleCaptainLocationUpdate)
-
-            // Cleanup function
-            return () => {
-                socket.off('ride-confirmed', handleRideConfirmed)
-                socket.off('ride-started', handleRideStarted)
-                socket.off('captain-location-update', handleCaptainLocationUpdate)
-            }
+        Object.entries(handlers).forEach(([event, handler]) => socket.on(event, handler))
+        return () => {
+            Object.entries(handlers).forEach(([event, handler]) => socket.off(event, handler))
         }
     }, [socket, user, navigate])
 
@@ -208,72 +234,83 @@ const Home = () => {
     }, [waitingForDriver])
 
 
+    const getPosition = async () => {
+        if (!navigator.geolocation) return {}
+        try {
+            const pos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    timeout: 5000,
+                    maximumAge: 60000,
+                })
+            })
+            return { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        } catch {
+            return {}
+        }
+    }
+
     async function findTrip() {
+        if (pickup.trim().length < 3 || destination.trim().length < 3) {
+            setTripError('Add a pickup and destination to see YENKO fares.')
+            return
+        }
+
+        setTripError('')
+        setNoCaptains(false)
+        setFareLoading(true)
         setVehiclePanel(true)
         setPanelOpen(false)
 
-        let lat, lng;
-        if (navigator.geolocation) {
-            try {
-                const pos = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-                })
-                lat = pos.coords.latitude
-                lng = pos.coords.longitude
-            } catch {
-                console.log('Geolocation unavailable for surge calc')
-            }
+        try {
+            const { lat, lng } = await getPosition()
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/rides/get-fares`, {
+                params: { pickup, destination, lat, lng },
+                headers: { Authorization: `Bearer ${getToken()}` },
+            })
+            setFares(response.data)
+        } catch (error) {
+            setTripError(error.response?.data?.message || 'Could not calculate fares. Please try again.')
+            setVehiclePanel(false)
+        } finally {
+            setFareLoading(false)
         }
-
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/rides/get-fare`, {
-            params: { pickup, destination, vehicleType, lat, lng },
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        })
-
-
-        setFare(response.data)
-
-
     }
 
     async function createRide() {
-        try {
-            console.log('🚗 Creating ride with data:', { pickup, destination, vehicleType });
+        // Errors are re-thrown so the confirm panel can recover and retry.
+        const { lat, lng } = await getPosition()
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/create`, {
+            pickup,
+            destination,
+            vehicleType,
+            lat,
+            lng,
+            paymentMethod,
+        }, {
+            headers: { Authorization: `Bearer ${getToken()}` },
+        })
 
-            let lat, lng;
-            if (navigator.geolocation) {
-                try {
-                    const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-                    })
-                    lat = pos.coords.latitude
-                    lng = pos.coords.longitude
-                } catch {
-                    console.log('Geolocation unavailable for ride creation')
-                }
+        setRide(response.data)
+        setNoCaptains(false)
+        return response.data
+    }
+
+    async function cancelSearch() {
+        if (ride?._id) {
+            try {
+                await axios.post(`${import.meta.env.VITE_API_URL}/rides/cancel`,
+                    { rideId: ride._id },
+                    { headers: { Authorization: `Bearer ${getToken()}` } })
+            } catch (error) {
+                console.error('Cancel ride failed:', error.message)
             }
-
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/create`, {
-                pickup,
-                destination,
-                vehicleType,
-                lat,
-                lng
-            }, {
-                headers: {
-                    Authorization: `Bearer ${getToken()}`
-                }
-            })
-
-            console.log('✅ Ride created successfully:', response.data);
-            setRide(response.data);
-
-        } catch (error) {
-            console.error('❌ Error creating ride:', error);
-            alert('Failed to create ride. Please try again.');
         }
+
+        setVehicleFound(false)
+        setWaitingForDriver(false)
+        setRide(null)
+        setNoCaptains(false)
+        setTripError('Ride request cancelled. You can request another one.')
     }
 
     return (
@@ -323,31 +360,42 @@ const Home = () => {
                 />
             </div>
 
-            {/* Service Categories */}
+            {/* Trust strip — every action here is a real, working shortcut. */}
             <div className='absolute top-24 left-5 right-5 z-20 flex flex-wrap gap-2 justify-center'>
-                {[
-                    { name: 'Ride', icon: '🚗', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-                    { name: 'Bike Taxi', icon: '🏍️', color: 'bg-green-50 text-green-700 border-green-200' },
-                    { name: 'Delivery', icon: '📦', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-                    { name: 'Courier', icon: '📮', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-                ].map((service) => (
-                    <button
-                        key={service.name}
-                        onClick={() => {
-                            // Service selection handler
-                        }}
-                        className={`px-5 py-2.5 rounded-full border text-sm font-medium transition-all shadow-sm ${
-                            service.color
-                        } hover:scale-105`}
-                    >
-                        {service.icon} {service.name}
-                    </button>
-                ))}
+                <span className='px-4 py-2 rounded-full border border-blue-200 bg-blue-50/95 text-blue-700 text-xs font-semibold shadow-sm'>
+                    🇬🇭 Built for Ghana · GH₵ fares
+                </span>
+                <button
+                    type='button'
+                    onClick={() => (fares ? setVehiclePanel(true) : findTrip())}
+                    className='px-4 py-2 rounded-full border border-gray-200 bg-white/95 text-gray-700 text-xs font-semibold shadow-sm hover:bg-gray-50'
+                >
+                    🚗 Compare ride prices
+                </button>
+                <button
+                    type='button'
+                    onClick={() => navigate('/safety')}
+                    className='px-4 py-2 rounded-full border border-red-200 bg-red-50/95 text-red-700 text-xs font-semibold shadow-sm hover:bg-red-100'
+                >
+                    🛡️ Safety & SOS
+                </button>
             </div>
 
+            {tripError && (
+                <div className='absolute top-40 left-5 right-5 z-20 flex items-start gap-3 rounded-xl border border-yellow-200 bg-yellow-50/95 px-4 py-3 shadow-md'>
+                    <span className='text-lg'>⚠️</span>
+                    <p className='flex-1 text-sm text-yellow-800'>{tripError}</p>
+                    <button type='button' onClick={() => setTripError('')} className='text-yellow-700 font-bold' aria-label='Dismiss message'>×</button>
+                </div>
+            )}
+
             <div className='h-screen w-screen'>
-                {/* image for temporary use  */}
-                <LiveTracking />
+                <LiveTracking
+                    ride={ride}
+                    showCaptain={Boolean(ride)}
+                    captainPosition={captainLocation}
+                    showSos={false}
+                />
             </div>
             <div className=' flex flex-col justify-end h-screen absolute top-0 w-full'>
                 <div className='h-[30%] p-6 bg-white relative'>
@@ -390,9 +438,11 @@ const Home = () => {
                             placeholder='Enter your destination' />
                     </form>
                     <button
+                        type='button'
                         onClick={findTrip}
-                        className='bg-black text-white px-4 py-2 rounded-lg mt-3 w-full'>
-                        Find Trip
+                        disabled={fareLoading}
+                        className='bg-[#111] text-white px-4 py-3 rounded-lg mt-3 w-full font-semibold disabled:bg-gray-400 transition-colors'>
+                        {fareLoading ? 'Calculating fares…' : 'Find Trip'}
                     </button>
                 </div>
                 <div ref={panelRef} className='bg-white h-0'>
@@ -410,7 +460,10 @@ const Home = () => {
                 <VehiclePanel
                     selectVehicle={setVehicleType}
                     selectedVehicle={vehicleType}
-                    fare={fare}
+                    fares={fares}
+                    loading={fareLoading}
+                    tripDistance={fares?.distanceKm}
+                    tripDuration={fares?.durationMin}
                     setConfirmRidePanel={setConfirmRidePanel}
                     setVehiclePanel={setVehiclePanel} />
             </div>
@@ -419,30 +472,31 @@ const Home = () => {
                     createRide={createRide}
                     pickup={pickup}
                     destination={destination}
-                    fare={fare}
+                    fare={selectedFare}
                     vehicleType={vehicleType}
-
-                    setConfirmRidePanel={setConfirmRidePanel} setVehicleFound={setVehicleFound} />
+                    paymentMethod={paymentMethod}
+                    setPaymentMethod={setPaymentMethod}
+                    setConfirmRidePanel={setConfirmRidePanel}
+                    setVehicleFound={setVehicleFound} />
             </div>
             <div ref={vehicleFoundRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12 h-[75vh] max-h-[600px]'>
                 <LookingForDriver
-                    createRide={createRide}
                     pickup={pickup}
                     destination={destination}
-                    fare={fare}
+                    fare={selectedFare}
                     vehicleType={vehicleType}
+                    noCaptains={noCaptains}
+                    onCancel={cancelSearch}
                     setVehicleFound={setVehicleFound} />
             </div>
             <div ref={waitingForDriverRef} className='fixed w-full z-10 bottom-0 bg-white px-3 py-6 pt-12 h-[80vh] max-h-[700px]'>
                 <WaitingForDriver
                     ride={ride}
+                    onMessage={() => ride?._id && navigate(`/chat/${ride._id}`)}
                     setVehicleFound={setVehicleFound}
                     setWaitingForDriver={setWaitingForDriver}
                     waitingForDriver={waitingForDriver} />
             </div>
-
-            {/* Socket Status Indicator */}
-            <SocketStatus />
         </div>
     )
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { SocketContext } from './socket.context';
 import { io } from 'socket.io-client';
+import { getToken, roleForPath } from '../lib/authToken';
 
 const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
@@ -16,25 +17,35 @@ const SocketProvider = ({ children }) => {
 
         console.log('🔌 Initializing Socket.IO connection to:', import.meta.env.VITE_API_URL);
 
-        // Initialize socket connection with production-optimized settings
+        // WebSocket first with polling fallback. Live ride tracking needs the
+        // low latency that polling-only transport cannot provide.
         const newSocket = io(`${import.meta.env.VITE_API_URL}`, {
-            transports: ['polling'], // Use polling only for better Vercel compatibility
-            timeout: 30000, // Increased timeout for slower connections
+            transports: ['websocket', 'polling'],
+            timeout: 30000,
             forceNew: true,
             reconnection: true,
-            reconnectionDelay: 2000, // Increased delay
-            reconnectionAttempts: 10, // More attempts
-            maxReconnectionAttempts: 10,
-            withCredentials: false, // Disable for CORS simplicity
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: Infinity,
+            withCredentials: false,
             autoConnect: true,
-            upgrade: false, // Prevent upgrade to websocket
-            rememberUpgrade: false
         });
+
+        // Room membership lives on the socket, so every new connection must
+        // re-join or ride events are silently missed after a reconnect.
+        const joinSession = () => {
+            const role = roleForPath();
+            const token = getToken(role);
+            if (token) {
+                newSocket.emit('join', { userType: role === 'rider' ? 'user' : role, token });
+            }
+        };
 
         // Connection event handlers
         newSocket.on('connect', () => {
             console.log('✅ Connected to Socket.IO server:', newSocket.id);
             setIsConnected(true);
+            joinSession();
         });
 
         newSocket.on('disconnect', (reason) => {
@@ -50,6 +61,7 @@ const SocketProvider = ({ children }) => {
         newSocket.on('reconnect', (attemptNumber) => {
             console.log('🔄 Reconnected to Socket.IO server, attempt:', attemptNumber);
             setIsConnected(true);
+            joinSession();
         });
 
         newSocket.on('reconnect_error', (error) => {

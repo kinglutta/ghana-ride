@@ -12,6 +12,7 @@ router.post('/create',
     body('vehicleType').isString().isIn(['auto', 'car', 'moto', 'comfort', 'xl', 'bike', 'motor', 'okada', 'pragya']).withMessage('Invalid vehicle type'),
     body('lat').optional().isFloat(),
     body('lng').optional().isFloat(),
+    body('paymentMethod').optional().isIn(['cash', 'momo', 'wallet']),
     rideController.createRide
 )
 
@@ -23,6 +24,21 @@ router.get('/get-fare',
     query('lat').optional().isFloat(),
     query('lng').optional().isFloat(),
     rideController.getFare
+)
+
+router.get('/get-fares',
+    authMiddleware.authUser,
+    query('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
+    query('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
+    query('lat').optional().isFloat(),
+    query('lng').optional().isFloat(),
+    rideController.getFares
+)
+
+router.post('/cancel',
+    authMiddleware.authUser,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
+    rideController.cancelRide
 )
 
 router.get('/surge',

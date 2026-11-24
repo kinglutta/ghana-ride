@@ -13,7 +13,7 @@ export const calculateRegion = ({
 }) => {
     if (!lat1 || !lng1) {
         return {
-            center: [5.6037, -0.1870], // Kumasi, Ghana default
+            center: [5.6037, -0.1870], // Accra, Ghana default
             zoom: 13,
         };
     }

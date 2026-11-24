@@ -53,7 +53,7 @@ const io = socketIo(server, {
         credentials: false,
         allowedHeaders: ['Content-Type', 'Authorization'],
     },
-    transports: ['polling'],
+    transports: ['websocket', 'polling'],
     allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000,
@@ -195,14 +195,20 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('update-location-captain', (data) => {
+    // Live Captain positions are ride-scoped: only the Rider on that ride sees
+    // them, and the payload carries the rideId so old events can be ignored.
+    socket.on('update-location-captain', async (data) => {
         if (!can('captain')) return;
-        socket.to('user').emit('captain-location-update', data);
-    });
-
-    socket.on('ride-request', (data) => {
-        if (!can('user')) return;
-        socket.to('captain').emit('new-ride-request', data);
+        try {
+            const recipients = await rideRecipients(data?.rideId, socket.identity);
+            if (!recipients) return;
+            const payload = { rideId: data.rideId, location: data.location };
+            recipients.forEach((id) => {
+                if (id !== socket.identity.id) io.to(id).emit('captain-location-update', payload);
+            });
+        } catch (error) {
+            console.error('Could not share captain location:', error.message);
+        }
     });
 
     socket.on('ride-accepted', async (data) => {

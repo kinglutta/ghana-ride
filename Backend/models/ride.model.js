@@ -80,6 +80,13 @@ const rideSchema = new mongoose.Schema({
         default: 'cash',
     },
 
+    // Rider's chosen method: cash or Mobile Money.
+    paymentMethod: {
+        type: String,
+        enum: ['cash', 'momo', 'wallet'],
+        default: 'cash',
+    },
+
     // Timestamps
     createdAt: {
         type: Date,

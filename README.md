@@ -35,7 +35,8 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Location Search** - Autocomplete address search with OpenStreetMap (Nominatim) integration
 - **Multiple Vehicle Types** - Choose from car, auto, Bike, Motor, Okada or Pragya (passenger tricycle)
 - **Live Ride Tracking** - Real-time GPS tracking during rides
-- **Fare Calculation** - Dynamic pricing based on distance and vehicle type
+- **Fare Calculation** - One live quote matrix compares every vehicle side by side
+- **Payment Choice** - Pick Cash or Mobile Money before confirming; cancellations are supported
 - **Ride History** - View past rides and receipts
 - **Payment Integration** - Secure payment processing (simulated)
 - **Private Ride Chat** - Message your assigned Captain; only the two ride participants can read it
@@ -74,6 +75,22 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Live trip sharing** creates a random, expiring token via `POST /trip/share`. Anyone with the link can open `/trip/:token` for a privacy-filtered OpenStreetMap view; the creator can revoke it with `DELETE /trip/:token`.
 - **Verification** is required for dispatch. Operations can approve or reject with a review note from the command centre, and the Captain receives the decision in-app.
 - **SOS** is sent once by the API to Operations, and the Rider can attach an emergency live link for a trusted contact.
+
+---
+
+## 🚦 The YENKO Ride Journey
+
+The booking path is deliberately explicit at every step — no hidden prices, no stale screens:
+
+1. **Set the trip** — Rider enters pickup and destination with Nominatim suggestions.
+2. **Compare fares** — `GET /rides/get-fares` calculates every vehicle from one route request, so Car, Auto, Bike, Motor, Okada, Pragya, Comfort and XL are priced consistently in GH₵.
+3. **Confirm** — the Rider sees the selected vehicle, exact fare, trip distance/time and chosen payment method. If creation fails, the Rider stays on this screen with a retry message.
+4. **Find a Captain** — only verified Captains who are online and not already on a ride receive `new-ride`. One event per offer avoids duplicate alerts, and the Rider can cancel with `POST /rides/cancel`.
+5. **Assigned** — the Captain's acceptance is an atomic claim, so two Captains can never win the same ride. The OTP goes only to the Rider's private socket room; the Captain's API response never contains it.
+6. **Start** — only the assigned Captain can start a ride, and only with the Rider's 6-digit OTP.
+7. **On trip** — live positions are ride-scoped and carry a `rideId`; sockets rejoin their verified rooms after reconnect. Trip chat is limited to the two participants.
+8. **Complete** — ride count and earnings are credited on completion (not on rating), the Captain is freed for new offers, and the Rider gets a real receipt with distance, duration and fare.
+9. **Pay & rate** — Cash is acknowledged; wallet/Mobile Money rides can be paid from the completion screen or the Payments hub with `?rideId=` preselection. Rating updates the Captain's average without falsifying payment state.
 
 ---
 

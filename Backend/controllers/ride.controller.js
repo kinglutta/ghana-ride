@@ -4,6 +4,7 @@ const mapService = require('../services/maps.service');
 const rideModel = require('../models/ride.model');
 const captainModel = require('../models/captain.model');
 
+const roomFor = (person) => person && String(person._id || person);
 
 module.exports.createRide = async (req, res) => {
     const errors = validationResult(req);
@@ -11,94 +12,58 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, pickup, destination, vehicleType, lat, lng } = req.body;
+    const { pickup, destination, vehicleType, lat, lng, paymentMethod } = req.body;
 
+    let ride;
     try {
-        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType, lat, lng });
-        res.status(201).json(ride);
-
-        const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-
-        // Get the ride with user data populated for sending to captains
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
-
-        // Remove OTP from the data sent to captains for security
-        const rideDataForCaptains = {
-            ...rideWithUser.toObject(),
-            otp: undefined
-        };
-
-        // Get Socket.IO instance from app
-        const io = req.app.get('io');
-
-        if (io) {
-            console.log('📡 Finding captains within radius for ride:', rideDataForCaptains._id);
-            console.log('📡 Pickup coordinates:', pickupCoordinates);
-
-            try {
-                // Get captains within 10km radius of pickup location
-                const captainsInRadius = await mapService.getCaptainsInTheRadius(
-                    pickupCoordinates.ltd,
-                    pickupCoordinates.lng,
-                    10 // 10km radius
-                );
-
-                console.log('📡 Found captains in radius:', captainsInRadius.length);
-
-                // Log all active captains for debugging
-                const allActiveCaptains = await require('../models/captain.model').find({ status: 'active' });
-                console.log('📡 Total active captains:', allActiveCaptains.length);
-                allActiveCaptains.forEach(captain => {
-                    if (captain.location && captain.location.ltd && captain.location.lng) {
-                        console.log(`📡 Active captain: ${captain.fullname.firstname} at [${captain.location.lng}, ${captain.location.ltd}]`);
-                    } else {
-                        console.log(`📡 Active captain: ${captain.fullname.firstname} - NO LOCATION SET`);
-                    }
-                });
-
-                if (captainsInRadius.length === 0) {
-                    console.log('⚠️ No captains available in the area');
-                    // Don't send another response — ride was already created with 201 above
-                    console.log('📡 Ride created but no captains available in your area');
-                }
-
-                // Send ride request to each captain in radius individually
-                captainsInRadius.forEach(captain => {
-                    if (captain.socketId) {
-                        console.log(`📡 Sending ride to captain: ${captain.fullname.firstname} (${captain.socketId})`);
-                        io.to(captain.socketId).emit('new-ride', rideDataForCaptains);
-                        io.to(captain.socketId).emit('new-ride-request', rideDataForCaptains);
-                    }
-                });
-
-                console.log('📡 Ride requests sent to', captainsInRadius.length, 'captains');
-
-            } catch (error) {
-                console.error('❌ Error finding captains in radius:', error);
-                // Fallback: broadcast to all captains in room
-                console.log('📡 Fallback: Broadcasting to all captains in room');
-                io.to('captain').emit('new-ride', rideDataForCaptains);
-                io.to('captain').emit('new-ride-request', rideDataForCaptains);
-            }
-        } else {
-            console.log('⚠️ Socket.IO not available');
-        }
-
-        // TODO: Implement location-based captain filtering
-        // const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoordinates.ltd, pickupCoordinates.lng, 2);
-        // captainsInRadius.map(captain => {
-        //     sendMessageToSocketId(captain.socketId, {
-        //         event: 'new-ride',
-        //         data: rideDataForCaptains
-        //     })
-        // })
-
+        ride = await rideService.createRide({
+            user: req.user._id, pickup, destination, vehicleType, lat, lng, paymentMethod
+        });
     } catch (err) {
-
-        console.log(err);
         return res.status(500).json({ message: err.message });
     }
 
+    res.status(201).json(ride);
+
+    // Everything below is post-response dispatch; failures here must not
+    // invalidate a ride that has already been created successfully.
+    try {
+        const io = req.app.get('io');
+        if (!io) return;
+
+        const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+        const rideWithUser = await rideModel.findById(ride._id).populate('user');
+        if (!rideWithUser) return;
+
+        // Captains never receive the OTP — only the Rider does.
+        const rideDataForCaptains = { ...rideWithUser.toObject(), otp: undefined };
+
+        const captainsInRadius = await mapService.getCaptainsInTheRadius(
+            pickupCoordinates.ltd,
+            pickupCoordinates.lng,
+            10
+        );
+
+        const verifiedCaptains = captainsInRadius.filter(
+            (captain) => captain.isVerified && !captain.onRide
+        );
+
+        if (verifiedCaptains.length === 0) {
+            io.to(roomFor(req.user)).emit('no-captains-nearby', {
+                rideId: String(ride._id),
+                message: 'No verified YENKO Captains nearby yet. We are still looking.',
+            });
+            return;
+        }
+
+        // One event per Captain. The duplicate `new-ride-request` alias caused
+        // double sounds/vibrations on Captain devices and is no longer emitted.
+        verifiedCaptains.forEach((captain) => {
+            io.to(String(captain._id)).emit('new-ride', rideDataForCaptains);
+        });
+    } catch (error) {
+        console.error('Ride dispatch error:', error.message);
+    }
 };
 
 module.exports.getFare = async (req, res) => {
@@ -110,19 +75,43 @@ module.exports.getFare = async (req, res) => {
     const { pickup, destination, vehicleType, lat, lng } = req.query;
 
     try {
-        const fare = await rideService.getFare(pickup, destination, vehicleType, 
-            lat ? parseFloat(lat) : undefined, 
-            lng ? parseFloat(lng) : undefined);
+        const fare = await rideService.getFare(
+            pickup,
+            destination,
+            vehicleType,
+            lat ? parseFloat(lat) : undefined,
+            lng ? parseFloat(lng) : undefined
+        );
         return res.status(200).json(fare);
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }
-}
+};
 
 /**
- * GET /rides/surge
- * Get surge multiplier for a location
+ * GET /rides/get-fares — every vehicle price from one map calculation.
  */
+module.exports.getFares = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { pickup, destination, lat, lng } = req.query;
+
+    try {
+        const fares = await rideService.getFareMatrix(
+            pickup,
+            destination,
+            lat ? parseFloat(lat) : undefined,
+            lng ? parseFloat(lng) : undefined
+        );
+        return res.status(200).json(fares);
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports.getSurge = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -141,7 +130,7 @@ module.exports.getSurge = async (req, res) => {
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }
-}
+};
 
 module.exports.confirmRide = async (req, res) => {
     const errors = validationResult(req);
@@ -149,27 +138,38 @@ module.exports.confirmRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
+    if (req.captain.isVerified !== true) {
+        return res.status(403).json({
+            message: 'Complete Captain verification before accepting rides',
+        });
+    }
+    if (req.captain.onRide === true) {
+        return res.status(409).json({ message: 'Finish your current ride first' });
+    }
+
     const { rideId } = req.body;
 
     try {
+        // The service response contains no OTP.
         const ride = await rideService.confirmRide({ rideId, captain: req.captain });
 
-        // Get Socket.IO instance and notify user
         const io = req.app.get('io');
         if (io && ride.user) {
-            console.log('📡 Notifying user that ride is confirmed:', ride.user._id);
-            // Get the ride with OTP for the user
-            const rideWithOTP = await rideModel.findById(rideId).populate('user').populate('captain').select('+otp');
-            io.to('user').emit('ride-confirmed', rideWithOTP);
+            // The Rider needs the OTP; deliver it only to their private room.
+            const rideWithOTP = await rideModel
+                .findById(rideId)
+                .populate('user')
+                .populate('captain')
+                .select('+otp');
+            io.to(roomFor(ride.user)).emit('ride-confirmed', rideWithOTP);
         }
 
         return res.status(200).json(ride);
     } catch (err) {
-
-        console.log(err);
-        return res.status(500).json({ message: err.message });
+        const taken = /already accepted|no longer available/i.test(err.message);
+        return res.status(taken ? 409 : 500).json({ message: err.message });
     }
-}
+};
 
 module.exports.startRide = async (req, res) => {
     const errors = validationResult(req);
@@ -182,23 +182,17 @@ module.exports.startRide = async (req, res) => {
     try {
         const ride = await rideService.startRide({ rideId, otp, captain: req.captain });
 
-        console.log('🚀 Ride started:', ride._id);
-
-        // Get Socket.IO instance and notify user
         const io = req.app.get('io');
         if (io && ride.user) {
-            console.log('📡 Notifying user that ride has started:', ride.user._id);
-            // Get the complete ride data
-            const rideWithDetails = await rideModel.findById(rideId).populate('user').populate('captain');
-            io.to('user').emit('ride-started', rideWithDetails);
+            io.to(roomFor(ride.user)).emit('ride-started', ride);
         }
 
         return res.status(200).json(ride);
     } catch (err) {
-        console.error('❌ Error starting ride:', err);
-        return res.status(500).json({ message: err.message });
+        const invalid = /not found|not assigned|invalid otp/i.test(err.message);
+        return res.status(invalid ? 400 : 500).json({ message: err.message });
     }
-}
+};
 
 module.exports.endRide = async (req, res) => {
     const errors = validationResult(req);
@@ -211,28 +205,51 @@ module.exports.endRide = async (req, res) => {
     try {
         const ride = await rideService.endRide({ rideId, captain: req.captain });
 
-        console.log('🏁 Ride ended:', ride._id);
-
-        // Get Socket.IO instance and notify user
         const io = req.app.get('io');
         if (io && ride.user) {
-            console.log('📡 Notifying user that ride has ended:', ride.user._id);
-            // Get the complete ride data with fare
-            const rideWithDetails = await rideModel.findById(rideId).populate('user').populate('captain');
-            io.to('user').emit('ride-ended', rideWithDetails);
-            io.to('user').emit('ride-completed', rideWithDetails);
+            io.to(roomFor(ride.user)).emit('ride-completed', ride);
         }
 
         return res.status(200).json(ride);
     } catch (err) {
-        console.error('❌ Error ending ride:', err);
         return res.status(500).json({ message: err.message });
     }
-}
+};
 
 /**
- * Rate a completed ride (rider -> driver rating).
- * Updates ride rating and captain's average rating.
+ * POST /rides/cancel — a Rider can stop a search or cancel before pickup.
+ */
+module.exports.cancelRide = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { rideId } = req.body;
+
+    try {
+        const ride = await rideService.cancelRide({ rideId, user: req.user._id });
+
+        const io = req.app.get('io');
+        if (io) {
+            io.to(roomFor(req.user)).emit('ride-cancelled', { rideId: String(ride._id) });
+            if (ride.captain) {
+                io.to(roomFor(ride.captain)).emit('ride-cancelled', {
+                    rideId: String(ride._id),
+                    message: 'The Rider cancelled this ride',
+                });
+            }
+        }
+
+        return res.status(200).json(ride);
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+/**
+ * Rate a completed ride (rider -> captain). Completion already credited the
+ * Captain's ride count and earnings, so rating only updates the average.
  */
 module.exports.rateRide = async (req, res) => {
     const errors = validationResult(req);
@@ -243,49 +260,35 @@ module.exports.rateRide = async (req, res) => {
     const { rideId, rating, comment } = req.body;
 
     try {
-        const ride = await rideModel.findById(rideId)
-            .populate('user')
-            .populate('captain');
+        const ride = await rideModel.findById(rideId).populate('user').populate('captain');
 
         if (!ride) {
             return res.status(404).json({ message: 'Ride not found' });
         }
-
-        if (ride.user._id.toString() !== req.user._id.toString()) {
+        if (String(ride.user._id) !== String(req.user._id)) {
             return res.status(403).json({ message: 'Not authorized to rate this ride' });
         }
-
         if (ride.status !== 'completed') {
             return res.status(400).json({ message: 'Can only rate completed rides' });
         }
-
         if (ride.rating) {
             return res.status(400).json({ message: 'Ride already rated' });
         }
 
         ride.rating = rating;
         ride.comment = comment || '';
-        ride.paymentStatus = 'paid';
         await ride.save();
 
-        // Update captain's average rating and total rides
         const captain = await captainModel.findById(ride.captain._id);
-        const totalRides = captain.totalRides + 1;
-        const newRating = ((captain.rating * captain.totalRides) + rating) / totalRides;
-
+        const previousRides = Math.max(0, (captain.totalRides || 1) - 1);
+        const newRating = ((captain.rating * previousRides) + rating) /
+            Math.max(1, previousRides + 1);
         captain.rating = Math.round(newRating * 10) / 10;
-        captain.totalRides = totalRides;
-        captain.earnings = (captain.earnings || 0) + ride.fare;
         await captain.save();
 
-        // Notify captain via socket
         const io = req.app.get('io');
-        if (io && captain.socketId) {
-            io.to(captain.socketId).emit('ride-rated', {
-                rideId,
-                rating,
-                comment,
-            });
+        if (io && captain) {
+            io.to(String(captain._id)).emit('ride-rated', { rideId, rating, comment });
         }
 
         return res.status(200).json({
@@ -294,14 +297,10 @@ module.exports.rateRide = async (req, res) => {
             totalRides: captain.totalRides,
         });
     } catch (err) {
-        console.error('❌ Error rating ride:', err);
         return res.status(500).json({ message: err.message });
     }
 };
 
-/**
- * Get ride history for the authenticated user.
- */
 module.exports.getRideHistory = async (req, res) => {
     try {
         const rides = await rideModel.find({ user: req.user._id })
@@ -311,7 +310,6 @@ module.exports.getRideHistory = async (req, res) => {
 
         return res.status(200).json(rides);
     } catch (err) {
-        console.error('❌ Error fetching ride history:', err);
         return res.status(500).json({ message: err.message });
     }
 };

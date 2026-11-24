@@ -12,6 +12,7 @@ import { formatFare } from '../lib/mapUtils';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
 import { getToken } from '../lib/authToken';
+import { useSearchParams } from 'react-router-dom';
 
 const PaymentPage = () => {
     const [providers, setProviders] = useState([]);
@@ -28,6 +29,8 @@ const PaymentPage = () => {
     const [message, setMessage] = useState('');
 
     const { socket } = useContext(SocketContext);
+    const [searchParams] = useSearchParams();
+    const requestedRideId = searchParams.get('rideId');
 
     useEffect(() => {
         fetchProviders();
@@ -35,6 +38,13 @@ const PaymentPage = () => {
         fetchTransactions();
         fetchUnpaidRides();
     }, []);
+
+    // Arriving from the completion screen preselects the exact ride.
+    useEffect(() => {
+        if (!requestedRideId || unpaidRides.length === 0) return;
+        const match = unpaidRides.find((ride) => ride._id === requestedRideId);
+        if (match) selectRideToPay(match);
+    }, [requestedRideId, unpaidRides]);
 
     const fetchProviders = async () => {
         try {
@@ -231,7 +241,7 @@ const PaymentPage = () => {
                                 />
                                 <CustomButton
                                     title="Top Up Wallet"
-                                    loading={loading && paymentMethod === 'wallet'}
+                                    loading={loading}
                                     disabled={loading || !topupAmount || !topupPhone}
                                 />
                             </form>
@@ -375,7 +385,7 @@ const PaymentPage = () => {
                                     ))}
                                 </div>
                             </div>
-                            {(paymentMethod === 'mtn_momo' || paymentMethod === 'vodafone_cash' || paymentMethod === 'airtel_tigo_money') && (
+                            {paymentMethod !== 'cash' && paymentMethod !== 'wallet' && (
                                 <InputField
                                     label="Mobile Money Number"
                                     type="tel"

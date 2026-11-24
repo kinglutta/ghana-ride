@@ -20,31 +20,23 @@ const Riding = () => {
     const [chatOpen, setChatOpen] = useState(false)
 
     useEffect(() => {
-        if (socket) {
-            const handleRideEnded = (data) => {
-                console.log('🏁 Ride ended, showing completion screen');
-                setCompletedRideData(data);
-                setRideCompleted(true);
-            }
+        if (!ride) navigate('/home', { replace: true })
+    }, [ride, navigate])
 
-            const handleRideCompleted = (data) => {
-                console.log('🏁 Ride completed:', data);
-                setCompletedRideData(data);
-                setRideCompleted(true);
-            }
+    useEffect(() => {
+        if (!socket) return
 
-            // Add event listeners
-            socket.on("ride-ended", handleRideEnded)
-            socket.on("ride-completed", handleRideCompleted)
-
-            // Cleanup function
-            return () => {
-                socket.off("ride-ended", handleRideEnded)
-                socket.off("ride-completed", handleRideCompleted)
-            }
+        const handleRideCompleted = (data) => {
+            setCompletedRideData(data)
+            setRideCompleted(true)
         }
-    }, [socket, navigate])
 
+        socket.on('ride-completed', handleRideCompleted)
+        return () => socket.off('ride-completed', handleRideCompleted)
+    }, [socket])
+
+
+    if (!ride) return null
 
     // Show ride completion screen if ride is completed
     if (rideCompleted && completedRideData) {
@@ -52,10 +44,7 @@ const Riding = () => {
             <div className='h-screen'>
                 <RideCompleted
                     ride={completedRideData}
-                    onClose={() => {
-                        setRideCompleted(false);
-                        setCompletedRideData(null);
-                    }}
+                    onClose={() => navigate('/home', { replace: true })}
                 />
             </div>
         );

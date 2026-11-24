@@ -36,6 +36,12 @@ const captainSchema = new mongoose.Schema({
         default: 'inactive',
     },
 
+    // True while a Captain is on a ride, so dispatch never offers new rides.
+    onRide: {
+        type: Boolean,
+        default: false,
+    },
+
     vehicle: {
         color: {
             type: String,

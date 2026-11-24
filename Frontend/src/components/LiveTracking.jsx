@@ -12,9 +12,10 @@ const containerStyle = {
     height: '100%',
 };
 
+// Accra city centre — a Ghana-appropriate default while GPS is resolving.
 const center = {
-    lat: -3.745,
-    lng: -38.523
+    lat: 5.6037,
+    lng: -0.1870
 };
 
 // Inner component rendered inside MapContainer so we can use the useMap hook
@@ -73,9 +74,9 @@ const TrackingMap = ({ currentPosition, captainPosition, showCaptain, routeCoord
     );
 };
 
-const LiveTracking = ({ ride, showCaptain = false, showRoute = false, showSos = true }) => {
+const LiveTracking = ({ ride, showCaptain = false, showRoute = false, showSos = true, captainPosition: captainPositionProp = null }) => {
     const [currentPosition, setCurrentPosition] = useState(center);
-    const [captainPosition, setCaptainPosition] = useState(null);
+    const [captainPosition, setCaptainPosition] = useState(captainPositionProp);
     const [routeCoordinates, setRouteCoordinates] = useState(null);
     const [sosActive, setSosActive] = useState(false);
     const [sosAlertId, setSosAlertId] = useState(null);
@@ -91,22 +92,21 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false, showSos = 
                     lng: longitude
                 });
             },
-            (error) => {
-                console.error('Error getting location:', error);
+            () => {
+                // Keep the Accra default when the user declines GPS access.
             }
         );
 
         const watchId = navigator.geolocation.watchPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                console.log('📍 Position updated:', latitude, longitude);
                 setCurrentPosition({
                     lat: latitude,
                     lng: longitude
                 });
             },
-            (error) => {
-                console.error('Error watching location:', error);
+            () => {
+                // A denied watch keeps the last known position on screen.
             },
             {
                 enableHighAccuracy: true,
@@ -169,26 +169,28 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false, showSos = 
         }
     };
 
-    // Listen for captain location updates if showing captain
     useEffect(() => {
-        if (socket && showCaptain) {
-            const handleCaptainLocationUpdate = (data) => {
-                console.log('📍 Captain location update:', data);
-                if (data.location) {
-                    setCaptainPosition({
-                        lat: data.location.ltd,
-                        lng: data.location.lng
-                    });
-                }
-            };
+        if (captainPositionProp) setCaptainPosition(captainPositionProp);
+    }, [captainPositionProp]);
 
-            socket.on('captain-location-update', handleCaptainLocationUpdate);
+    // Only accept positions for this ride. The server scopes the event, and
+    // the rideId check protects against late packets from a previous ride.
+    useEffect(() => {
+        if (!socket || !showCaptain) return;
 
-            return () => {
-                socket.off('captain-location-update', handleCaptainLocationUpdate);
-            };
-        }
-    }, [socket, showCaptain]);
+        const handleCaptainLocationUpdate = (data) => {
+            if (ride?._id && data?.rideId && String(data.rideId) !== String(ride._id)) return;
+            if (data?.location?.ltd && data?.location?.lng) {
+                setCaptainPosition({
+                    lat: data.location.ltd,
+                    lng: data.location.lng,
+                });
+            }
+        };
+
+        socket.on('captain-location-update', handleCaptainLocationUpdate);
+        return () => socket.off('captain-location-update', handleCaptainLocationUpdate);
+    }, [socket, showCaptain, ride]);
 
     // Fetch route between pickup and destination using the free OSRM demo server
     useEffect(() => {
