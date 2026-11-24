@@ -2,6 +2,8 @@
 
 A comprehensive ride-sharing platform built with modern web technologies, featuring real-time communication, location services, and secure authentication. This application provides both user and driver (captain) interfaces with live ride tracking and management.
 
+> See [Unified Onboarding](docs/ONBOARDING.md) for the single rider/captain/operations sign-in flow and the admin invite-code setup.
+
 **ðŸ“± MOBILE-OPTIMIZED:** This application is designed and optimized for mobile devices. For the best experience, please view on mobile or use your browser's mobile view (F12 â†’ Toggle Device Toolbar).
 
 ## ðŸŒŸ Live Demo

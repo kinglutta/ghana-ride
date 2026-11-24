@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react'
 import Start from './pages/Start'
-import { Routes, Route } from 'react-router-dom'
+import { Navigate, Routes, Route } from 'react-router-dom'
 import UserProtectedWrapper from './pages/UserProtectedWrapper'
 import CaptainProtectedWrapper from './pages/CaptainProtectedWrapper'
 import AdminProtectedWrapper from './pages/AdminProtectedWrapper'
@@ -10,10 +10,7 @@ import AuthGateMessage from './components/ui/AuthGateMessage'
 import usePageTitle from './hooks/usePageTitle'
 
 // Feature pages are loaded on demand — the landing screen stays lightweight.
-const UserSignup = lazy(() => import('./pages/UserSignup'))
-const UserLogin = lazy(() => import('./pages/UserLogin'))
-const CaptainLogin = lazy(() => import('./pages/Captainlogin'))
-const CaptainSignup = lazy(() => import('./pages/CaptainSignup'))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
 const Home = lazy(() => import('./pages/Home'))
 const UserLogout = lazy(() => import('./pages/UserLogout'))
 const CaptainLogout = lazy(() => import('./pages/CaptainLogout'))
@@ -57,10 +54,13 @@ const App = () => {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path='/' element={<Titled title="Welcome"><Start /></Titled>} />
-          <Route path='/login' element={<Titled title="Rider Login"><UserLogin /></Titled>} />
-          <Route path='/signup' element={<Titled title="Join YENKO"><UserSignup /></Titled>} />
-          <Route path='/captain-login' element={<Titled title="Captain Login"><CaptainLogin /></Titled>} />
-          <Route path='/captain-signup' element={<Titled title="Become a Captain"><CaptainSignup /></Titled>} />
+          <Route path='/onboarding' element={<Onboarding />} />
+          <Route path='/login' element={<Navigate to='/onboarding?mode=signin&role=rider' replace />} />
+          <Route path='/signup' element={<Navigate to='/onboarding?mode=signup&role=rider' replace />} />
+          <Route path='/captain-login' element={<Navigate to='/onboarding?mode=signin&role=captain' replace />} />
+          <Route path='/captain-signup' element={<Navigate to='/onboarding?mode=signup&role=captain' replace />} />
+          <Route path='/admin-login' element={<Navigate to='/onboarding?mode=signin&role=admin' replace />} />
+          <Route path='/admin-signup' element={<Navigate to='/onboarding?mode=signup&role=admin' replace />} />
           <Route path='/rider' element={
             <UserProtectedWrapper>
               <RiderApp />

@@ -20,6 +20,8 @@ const state = {
     riderEmail: `rider.${Date.now()}@example.com`,
     captainToken: '',
     captainEmail: `captain.${Date.now()}@example.com`,
+    adminToken: '',
+    adminEmail: `admin.${Date.now()}@example.com`,
 };
 
 before(async () => {
@@ -27,6 +29,7 @@ before(async () => {
     process.env.MONGODB_URL = mongo.getUri('yenko_test');
     process.env.JWT_SECRET = 'yenko-integration-test-secret';
     process.env.JWT_EXPIRES_IN = '1h';
+    process.env.ADMIN_SIGNUP_CODES = 'yenko-admin-test-code, second-test-code';
 
     // app.js connects to the database when required, so env must be set first.
     const app = require('../app');
@@ -128,6 +131,59 @@ describe('YENKO RIDE API', () => {
         });
         assert.equal(rejected.status, 400);
         assert.match(rejected.data.message, /Invalid email or password/);
+    });
+
+    it('requires a valid invite code for admin onboarding', async () => {
+        const userModel = require('../models/user.model');
+        const baseBody = {
+            fullname: { firstname: 'Yenko', lastname: 'Operations' },
+            email: state.adminEmail,
+            password: 'Admin12345',
+            role: 'admin',
+        };
+
+        const denied = await api('/users/register', {
+            method: 'POST',
+            body: { ...baseBody, adminCode: 'not-the-code' },
+        });
+        assert.equal(denied.status, 403, JSON.stringify(denied.data));
+        assert.match(denied.data.message, /admin access code/i);
+        assert.equal(await userModel.exists({ email: state.adminEmail }), null);
+
+        const granted = await api('/users/register', {
+            method: 'POST',
+            body: { ...baseBody, adminCode: 'yenko-admin-test-code' },
+        });
+        assert.equal(granted.status, 201, JSON.stringify(granted.data));
+        assert.equal(granted.data.user.role, 'admin');
+        state.adminToken = granted.data.token;
+
+        const stats = await api('/admin/stats', { token: state.adminToken });
+        assert.equal(stats.status, 200, JSON.stringify(stats.data));
+    });
+
+    it('never promotes a rider who omits the admin code', async () => {
+        const res = await api('/users/register', {
+            method: 'POST',
+            body: {
+                fullname: { firstname: 'Sneaky', lastname: 'Rider' },
+                email: `rider.no.code.${Date.now()}@example.com`,
+                password: 'password123',
+                role: 'admin',
+            },
+        });
+        assert.equal(res.status, 403, JSON.stringify(res.data));
+
+        const normal = await api('/users/register', {
+            method: 'POST',
+            body: {
+                fullname: { firstname: 'Plain', lastname: 'Rider' },
+                email: `rider.normal.${Date.now()}@example.com`,
+                password: 'password123',
+            },
+        });
+        assert.equal(normal.status, 201, JSON.stringify(normal.data));
+        assert.equal(normal.data.user.role, 'rider');
     });
 
     it('protects the rider profile route', async () => {

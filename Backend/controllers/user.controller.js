@@ -2,6 +2,7 @@ const userModel = require('../models/user.model');
 const userService = require('../services/user.service');
 const { validationResult } = require('express-validator');
 const blacklistTokenModel = require('../models/blacklistToken.model');
+const adminAccess = require('../utils/adminAccess');
 
 module.exports.registerUser = async (req, res, next) => {
     try {
@@ -10,9 +11,14 @@ module.exports.registerUser = async (req, res, next) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        console.log(req.body);
+        const { fullname, email, password, role, adminCode } = req.body;
 
-        const { fullname, email, password } = req.body;
+        // Only a valid invite code can promote an account to admin. Everyone
+        // else is forced to the safe rider role, even if they send `role`.
+        const requestedRole = role === 'admin' ? 'admin' : 'rider';
+        if (requestedRole === 'admin' && !adminAccess.matches(adminCode)) {
+            return res.status(403).json({ message: 'Invalid or missing admin access code' });
+        }
 
         const isUserAlreadyExist = await userModel.findOne({ email });
 
@@ -22,23 +28,28 @@ module.exports.registerUser = async (req, res, next) => {
 
         const hashedPassword = await userModel.hashPassword(password);
 
-        const user = await userService.createUser(fullname.firstname, fullname.lastname, email, hashedPassword);
-
-        console.log('User object:', user);
-        console.log('User methods:', Object.keys(user.__proto__));
+        const user = await userService.createUser(
+            fullname.firstname,
+            fullname.lastname,
+            email,
+            hashedPassword,
+            requestedRole
+        );
 
         const token = await user.generateAuthToken();
 
         res.status(201).json(
             {
-                message: 'User registered successfully',
+                message: requestedRole === 'admin'
+                    ? 'Admin account registered successfully'
+                    : 'User registered successfully',
                 user,
                 token
             }
         );
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: 'Something went wrong' });
     }
 }

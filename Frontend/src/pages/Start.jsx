@@ -45,7 +45,7 @@ const Start = () => {
           </div>
 
           <Link
-            to='/login'
+            to='/onboarding'
             className='mt-7 flex items-center justify-center w-full rounded-xl bg-[#111] px-4 py-3.5 text-base font-bold text-white transition-colors hover:bg-gray-800'
           >
             Continue with YENKO
