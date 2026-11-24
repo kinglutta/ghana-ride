@@ -6,8 +6,8 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import ConfirmRidePopUp from '../components/ConfirmRidePopUp'
 import { useEffect, useContext } from 'react'
-import { SocketContext } from '../context/SocketContext'
-import { CaptainDataContext } from '../context/CaptainContext'
+import { SocketContext } from '../context/socket.context'
+import { CaptainDataContext } from '../context/captain.context'
 import axios from 'axios'
 import { Brand } from '../components/ui/YenkoShell'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
@@ -169,8 +169,8 @@ const CaptainHome = () => {
                 // Play notification sound (optional)
                 try {
                     const audio = new Audio('/notification.mp3') // You can add a notification sound file
-                    audio.play().catch(e => console.log('Could not play notification sound'))
-                } catch (e) {
+                    audio.play().catch(() => console.log('Could not play notification sound'))
+                } catch {
                     console.log('Notification sound not available')
                 }
 
@@ -190,8 +190,8 @@ const CaptainHome = () => {
                 // Play notification sound (optional)
                 try {
                     const audio = new Audio('/notification.mp3')
-                    audio.play().catch(e => console.log('Could not play notification sound'))
-                } catch (e) {
+                    audio.play().catch(() => console.log('Could not play notification sound'))
+                } catch {
                     console.log('Notification sound not available')
                 }
 
@@ -224,11 +224,11 @@ const CaptainHome = () => {
                 socket.off('new-ride-request', handleNewRideRequest)
             }
         }
-    }, [socket, captain])
+    }, [socket, captain, navigate])
 
     async function confirmRide() {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/confirm`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/rides/confirm`, {
                 rideId: ride._id,
                 captainId: captain._id,
             }, {

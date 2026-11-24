@@ -3,8 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap 
 import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
 import MapFallback from './MapFallback'
-import { SocketContext } from '../context/SocketContext'
-import { useNavigate } from 'react-router-dom'
+import { SocketContext } from '../context/socket.context'
 
 const containerStyle = {
     width: '100%',
@@ -76,10 +75,8 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
     const [currentPosition, setCurrentPosition] = useState(center);
     const [captainPosition, setCaptainPosition] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState(null);
-    const [loadError, setLoadError] = useState(null);
     const [sosActive, setSosActive] = useState(false);
     const { socket } = useContext(SocketContext);
-    const navigate = useNavigate();
 
     // Get initial position
     useEffect(() => {
@@ -221,10 +218,6 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
 
         fetchRoute();
     }, [showRoute, ride]);
-
-    if (loadError) {
-        return <MapFallback error={loadError} />;
-    }
 
     if (!currentPosition || typeof currentPosition.lat !== 'number') {
         return <MapFallback loading={true} />;

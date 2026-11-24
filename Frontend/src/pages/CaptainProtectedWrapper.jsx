@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { CaptainDataContext } from '../context/CaptainContext'
+import { CaptainDataContext } from '../context/captain.context'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import AuthGateMessage from '../components/ui/AuthGateMessage'

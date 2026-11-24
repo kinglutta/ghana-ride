@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { formatTime, formatFare } from '../lib/mapUtils';
+import { formatFare } from '../lib/mapUtils';
 import CustomButton from '../components/ui/CustomButton';
 
 const AdminDashboard = () => {

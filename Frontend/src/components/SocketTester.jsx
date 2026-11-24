@@ -1,16 +1,16 @@
 import { useContext, useState, useEffect } from 'react'
-import { SocketContext } from '../context/SocketContext'
-import { UserDataContext } from '../context/UserContext'
+import { SocketContext } from '../context/socket.context'
+import { UserDataContext } from '../context/user.context'
 
 const SocketTester = () => {
     const { socket, isConnected, joinRoom, sendRideRequest, updateCaptainLocation, acceptRide, completeRide } = useContext(SocketContext)
     const { user } = useContext(UserDataContext)
     const [logs, setLogs] = useState([])
-    const [testData, setTestData] = useState({
+    const testData = {
         pickup: '123 Main St',
         destination: '456 Oak Ave',
         vehicleType: 'car'
-    })
+    }
 
     const addLog = (message, type = 'info') => {
         const timestamp = new Date().toLocaleTimeString()

@@ -25,7 +25,6 @@ const DriverVerification = () => {
 
     useEffect(() => {
         fetchVerification();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchVerification = async () => {

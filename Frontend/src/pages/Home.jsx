@@ -8,9 +8,9 @@ import VehiclePanel from '../components/VehiclePanel';
 import ConfirmRide from '../components/ConfirmRide';
 import LookingForDriver from '../components/LookingForDriver';
 import WaitingForDriver from '../components/WaitingForDriver';
-import { SocketContext } from '../context/SocketContext';
+import { SocketContext } from '../context/socket.context';
 import { useContext } from 'react';
-import { UserDataContext } from '../context/UserContext';
+import { UserDataContext } from '../context/user.context';
 import { useNavigate } from 'react-router-dom';
 import LiveTracking from '../components/LiveTracking';
 import { Brand } from '../components/ui/YenkoShell';
@@ -219,7 +219,7 @@ const Home = () => {
                 })
                 lat = pos.coords.latitude
                 lng = pos.coords.longitude
-            } catch (e) {
+            } catch {
                 console.log('Geolocation unavailable for surge calc')
             }
         }
@@ -249,7 +249,7 @@ const Home = () => {
                     })
                     lat = pos.coords.latitude
                     lng = pos.coords.longitude
-                } catch (e) {
+                } catch {
                     console.log('Geolocation unavailable for ride creation')
                 }
             }

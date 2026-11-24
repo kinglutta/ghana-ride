@@ -1,5 +1,5 @@
 /**
- * Referral â€” referral codes and credits
+ * Referral — referral codes and credits
  * Invite friends, earn free ride credits
  */
 
@@ -96,8 +96,8 @@ const Referral = () => {
             <div className="max-w-3xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">ðŸŽ Refer & Earn</h1>
-                        <p className="text-gray-600">Invite friends and get GHâ‚µ5 credit per referral</p>
+                        <h1 className="text-3xl font-bold text-gray-900">🎁 Refer & Earn</h1>
+                        <p className="text-gray-600">Invite friends and get GH₵5 credit per referral</p>
                     </div>
                     {message && (
                         <div className="px-4 py-2 rounded bg-green-100 text-green-700 text-sm font-medium">
@@ -127,7 +127,7 @@ const Referral = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Your Referral Code */}
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ”— Your Referral Code</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">🔗 Your Referral Code</h3>
                         <div className="flex gap-2 mb-6">
                             <input
                                 type="text"
@@ -140,7 +140,7 @@ const Referral = () => {
                                 className="px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors"
                                 title="Copy link"
                             >
-                                ðŸ“‹
+                                📋
                             </button>
                         </div>
                         <p className="text-sm text-gray-600 mb-4">
@@ -154,9 +154,9 @@ const Referral = () => {
 
                     {/* Apply Referral Code */}
                     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸŽŸï¸ Apply Referral Code</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">🎟️ Apply Referral Code</h3>
                         <p className="text-sm text-gray-600 mb-4">
-                            Got a referral code from a friend? Enter it here to get GHâ‚µ5 credit on your first ride.
+                            Got a referral code from a friend? Enter it here to get GH₵5 credit on your first ride.
                         </p>
                         <form onSubmit={handleApplyReferral} className="space-y-3">
                             <InputField
@@ -175,10 +175,10 @@ const Referral = () => {
 
                     {/* Referral History */}
                     <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ“‹ Your Referrals</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Your Referrals</h3>
                         {referrals.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
-                                <div className="text-gray-300 text-2xl mb-2">ðŸ‘¥</div>
+                                <div className="text-gray-300 text-2xl mb-2">👥</div>
                                 <p>No referrals yet</p>
                                 <p className="text-xs text-gray-400 mt-2">Share your code to start earning</p>
                             </div>
@@ -226,24 +226,24 @@ const Referral = () => {
                 </div>
 
                 <div className="mt-8 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">ðŸ’¡ How It Works</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">💡 How It Works</h3>
                     <div className="space-y-3 text-sm text-gray-600">
                         <div className="flex gap-3">
                             <span className="w-6 h-6 rounded bg-green-100 text-green-600 flex items-center justify-center">1</span>
                             <div>
-                                <span className="font-medium">Share your code</span> â€” Send your referral link to friends
+                                <span className="font-medium">Share your code</span> — Send your referral link to friends
                             </div>
                         </div>
                         <div className="flex gap-3">
                             <span className="w-6 h-6 rounded bg-green-100 text-green-600 flex items-center justify-center">2</span>
                             <div>
-                                <span className="font-medium">Friend signs up</span> â€” They use your code during registration
+                                <span className="font-medium">Friend signs up</span> — They use your code during registration
                             </div>
                         </div>
                         <div className="flex gap-3">
                             <span className="w-6 h-6 rounded bg-green-100 text-green-600 flex items-center justify-center">3</span>
                             <div>
-                                <span className="font-medium">First ride completed</span> â€” You both get GHâ‚µ5 credit
+                                <span className="font-medium">First ride completed</span> — You both get GH₵5 credit
                             </div>
                         </div>
                     </div>

@@ -10,7 +10,6 @@ const InputField = ({
     icon,
     secureTextEntry = false,
     labelStyle,
-    containerStyle,
     inputStyle,
     className = '',
     ...props

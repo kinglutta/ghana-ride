@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { SocketContext } from '../context/SocketContext'
+import { SocketContext } from '../context/socket.context'
 
 const SocketStatus = () => {
     const { isConnected } = useContext(SocketContext)

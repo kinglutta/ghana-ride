@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { CaptainDataContext } from '../context/CaptainContext'
+import { CaptainDataContext } from '../context/captain.context'
 import AuthShell, { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
 
 const CaptainSignup = () => {

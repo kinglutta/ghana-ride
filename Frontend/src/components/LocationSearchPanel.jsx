@@ -1,7 +1,7 @@
 import React from 'react'
 
 const LocationSearchPanel = (props) => {
-    const { suggestions = [], setPanelOpen, setVehiclePanel, setPickup, setDestination, activeField } = props
+    const { suggestions = [], setPickup, setDestination, activeField } = props
 
     // Handle location selection
     const handleLocationSelect = (suggestion) => {

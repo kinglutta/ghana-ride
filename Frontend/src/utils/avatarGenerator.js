@@ -172,10 +172,9 @@ export const generateGravatar = (email, size = 100) => {
  * Get avatar with fallback options
  * @param {Object} user - User or captain object
  * @param {string} userType - 'user' or 'captain'
- * @param {string} style - Preferred style
  * @returns {string} Avatar URL
  */
-export const getAvatarWithFallback = (user, userType = 'user', style = 'initials') => {
+export const getAvatarWithFallback = (user, userType = 'user') => {
     try {
         if (userType === 'captain') {
             return generateCaptainAvatar(user);
