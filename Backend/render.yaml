@@ -19,15 +19,11 @@ services:
         value: 24h
       - key: FRONTEND_URL
         value: https://yenkoroide.vercel.app
+      - key: ADMIN_SIGNUP_CODES
+        sync: false
     autoDeploy: true
     branch: main
     rootDir: Backend
 
-databases:
-  - name: yenkoroide-mongodb
-    databaseName: yenkoroide
-    user: yenkoroide_admin
-    plan: free
-# Environment Variables to set in Render Dashboard:
-# MONGODB_URL: mongodb+srv://username:password@cluster.mongodb.net/yenkoroide
-# JWT_SECRET: your-super-secret-jwt-key-minimum-32-characters
+# MongoDB is provided separately by MongoDB Atlas. Render does not provide a
+# managed MongoDB database here, so MONGODB_URL is supplied as a secret above.

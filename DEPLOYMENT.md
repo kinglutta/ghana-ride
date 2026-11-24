@@ -48,7 +48,10 @@ MONGODB_URL=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/yenko_ride?retryWrit
 JWT_SECRET=<random-32+-character-secret>
 JWT_EXPIRES_IN=24h
 FRONTEND_URL=https://your-app.vercel.app
+ADMIN_SIGNUP_CODES=<private-admin-code>
 ```
+
+> `ADMIN_SIGNUP_CODES` is server-side only. Never put it in the frontend or Vercel environment variables. MongoDB is supplied by Atlas; `render.yaml` does not create a database.
 
 > Generate `JWT_SECRET` with `openssl rand -hex 32`. Never commit real secrets.
 
@@ -97,6 +100,8 @@ The backend allows `FRONTEND_URL` plus any `*.vercel.app` origin in production, 
 - [ ] Admin dashboard analytics charts render
 - [ ] PWA install prompt appears (manifest + service worker)
 
+For a full phone-based pilot, use **[docs/REAL_WORLD_TESTING.md](./docs/REAL_WORLD_TESTING.md)**.
+
 ---
 
 ## Environment variable reference
@@ -111,6 +116,7 @@ The backend allows `FRONTEND_URL` plus any `*.vercel.app` origin in production, 
 | `JWT_SECRET` | random 32+ chars | Yes |
 | `JWT_EXPIRES_IN` | `24h` | Yes |
 | `FRONTEND_URL` | `https://yenkoroide.vercel.app` | Yes |
+| `ADMIN_SIGNUP_CODES` | private code, comma-separated | Recommended |
 
 ### Frontend (`Frontend/.env`)
 

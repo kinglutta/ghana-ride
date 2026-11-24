@@ -1157,7 +1157,10 @@ VITE_API_URL=http://localhost:3000
    JWT_SECRET=your-production-jwt-secret
    JWT_EXPIRES_IN=24h
    FRONTEND_URL=https://your-frontend-domain.vercel.app
+   ADMIN_SIGNUP_CODES=your-private-admin-code
    ```
+
+   `ADMIN_SIGNUP_CODES` is server-side only and must never be added to Vercel or frontend code.
 
 4. **Deploy**
    - Render will automatically deploy when you push to main branch
@@ -1181,6 +1184,8 @@ VITE_API_URL=http://localhost:3000
 
 4. **Deploy**
    - Vercel will automatically deploy when you push to main branch
+
+For a full phone-based pilot, follow **[docs/REAL_WORLD_TESTING.md](./docs/REAL_WORLD_TESTING.md)**.
 
 ---
 
