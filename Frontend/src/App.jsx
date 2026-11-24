@@ -17,6 +17,7 @@ import RideHistory from './pages/RideHistory'
 import AdminDashboard from './pages/AdminDashboard'
 import PaymentPage from './pages/PaymentPage'
 import SafetyPage from './pages/SafetyPage'
+import DriverEarnings from './pages/DriverEarnings'
 import SocketStatus from './components/SocketStatus'
 
 const App = () => {
@@ -77,6 +78,11 @@ const App = () => {
         <Route path='/safety' element={
           <UserProtectedWrapper>
             <SafetyPage />
+          </UserProtectedWrapper>
+        } />
+        <Route path='/driver-earnings' element={
+          <UserProtectedWrapper>
+            <DriverEarnings />
           </UserProtectedWrapper>
         } />
       </Routes>

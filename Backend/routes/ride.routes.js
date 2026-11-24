@@ -9,7 +9,9 @@ router.post('/create',
     authMiddleware.authUser,
     body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
     body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
-    body('vehicleType').isString().isIn(['auto', 'car', 'moto']).withMessage('Invalid vehicle type'),
+    body('vehicleType').isString().isIn(['auto', 'car', 'moto', 'comfort', 'xl', 'bike']).withMessage('Invalid vehicle type'),
+    body('lat').optional().isFloat(),
+    body('lng').optional().isFloat(),
     rideController.createRide
 )
 
@@ -17,7 +19,17 @@ router.get('/get-fare',
     authMiddleware.authUser,
     query('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
     query('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
+    query('vehicleType').optional().isString().isIn(['auto', 'car', 'moto', 'comfort', 'xl', 'bike']),
+    query('lat').optional().isFloat(),
+    query('lng').optional().isFloat(),
     rideController.getFare
+)
+
+router.get('/surge',
+    authMiddleware.authUser,
+    query('lat').isFloat().withMessage('Latitude required'),
+    query('lng').isFloat().withMessage('Longitude required'),
+    rideController.getSurge
 )
 
 router.post('/confirm',

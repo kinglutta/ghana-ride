@@ -211,8 +211,21 @@ const Home = () => {
         setVehiclePanel(true)
         setPanelOpen(false)
 
+        let lat, lng;
+        if (navigator.geolocation) {
+            try {
+                const pos = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+                })
+                lat = pos.coords.latitude
+                lng = pos.coords.longitude
+            } catch (e) {
+                console.log('Geolocation unavailable for surge calc')
+            }
+        }
+
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/rides/get-fare`, {
-            params: { pickup, destination },
+            params: { pickup, destination, vehicleType, lat, lng },
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
@@ -228,10 +241,25 @@ const Home = () => {
         try {
             console.log('🚗 Creating ride with data:', { pickup, destination, vehicleType });
 
+            let lat, lng;
+            if (navigator.geolocation) {
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+                    })
+                    lat = pos.coords.latitude
+                    lng = pos.coords.longitude
+                } catch (e) {
+                    console.log('Geolocation unavailable for ride creation')
+                }
+            }
+
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/create`, {
                 pickup,
                 destination,
-                vehicleType
+                vehicleType,
+                lat,
+                lng
             }, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`

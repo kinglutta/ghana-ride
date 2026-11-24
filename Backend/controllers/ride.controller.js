@@ -11,10 +11,10 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, pickup, destination, vehicleType } = req.body;
+    const { userId, pickup, destination, vehicleType, lat, lng } = req.body;
 
     try {
-        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
+        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType, lat, lng });
         res.status(201).json(ride);
 
         const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
@@ -107,11 +107,37 @@ module.exports.getFare = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { pickup, destination } = req.query;
+    const { pickup, destination, vehicleType, lat, lng } = req.query;
 
     try {
-        const fare = await rideService.getFare(pickup, destination);
+        const fare = await rideService.getFare(pickup, destination, vehicleType, 
+            lat ? parseFloat(lat) : undefined, 
+            lng ? parseFloat(lng) : undefined);
         return res.status(200).json(fare);
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+}
+
+/**
+ * GET /rides/surge
+ * Get surge multiplier for a location
+ */
+module.exports.getSurge = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { lat, lng } = req.query;
+
+    try {
+        const SurgePricingService = require('../services/surge.service');
+        const surge = await SurgePricingService.calculateSurge(
+            parseFloat(lat),
+            parseFloat(lng)
+        );
+        return res.status(200).json(surge);
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }

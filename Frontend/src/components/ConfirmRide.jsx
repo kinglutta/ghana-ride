@@ -29,11 +29,14 @@ const ConfirmRide = (props) => {
                                 <p className='text-sm -mt-1 text-gray-600'>{props.destination}</p>
                             </div>
                         </div>
-                        <div className='flex items-center gap-5 p-3'>
+                        <div className='flex items-center gap-5 p-3 border-b-2'>
                             <i className="ri-currency-line text-lg"></i>
                             <div>
-                                <h3 className='text-lg font-medium'>₹{props.fare[props.vehicleType]}</h3>
-                                <p className='text-sm -mt-1 text-gray-600'>Cash Cash</p>
+                                <h3 className='text-lg font-medium'>{props.fare?.finalFare ? `GH₵${props.fare.finalFare}` : `GH₵${props.fare?.[props.vehicleType] || '0'}`}</h3>
+                                <p className='text-sm -mt-1 text-gray-600'>Cash payment</p>
+                                {props.fare?.surgeFactor && props.fare.surgeFactor > 0 && (
+                                    <span className='text-xs text-yellow-600 font-bold ml-2'>⚡ +{props.fare.surgeFactor}% surge</span>
+                                )}
                             </div>
                         </div>
                     </div>
