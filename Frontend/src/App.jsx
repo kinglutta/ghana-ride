@@ -29,6 +29,7 @@ const DriverApp = lazy(() => import('./pages/DriverApp'))
 const Referral = lazy(() => import('./pages/Referral'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Chat = lazy(() => import('./pages/Chat'))
+const TripSharePage = lazy(() => import('./pages/TripSharePage'))
 const DriverVerification = lazy(() => import('./pages/DriverVerification'))
 const Disputes = lazy(() => import('./pages/Disputes'))
 
@@ -151,6 +152,7 @@ const App = () => {
               <Feature title="Ride Chat"><Chat /></Feature>
             </UserProtectedWrapper>
           } />
+          <Route path='/trip/:token' element={<TripSharePage />} />
           <Route path='/driver-verification' element={
             <CaptainProtectedWrapper>
               <Feature title="Driver Verification"><DriverVerification /></Feature>

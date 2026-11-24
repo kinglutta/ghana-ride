@@ -131,6 +131,11 @@ module.exports.updateLocation = async (req, res) => {
             return res.status(400).json({ message: 'Location coordinates are required' });
         }
 
+        // Verification gates dispatch: location keeps updating, but only a
+        // verified Captain can appear in ride offers.
+        const isVerified = req.captain.isVerified === true;
+        const nextStatus = isVerified ? 'active' : 'inactive';
+
         console.log('📍 Updating captain location in database...');
         const captain = await captainModel.findByIdAndUpdate(
             captainId,
@@ -139,7 +144,7 @@ module.exports.updateLocation = async (req, res) => {
                     ltd: parseFloat(location.ltd),
                     lng: parseFloat(location.lng)
                 },
-                status: 'active' // Set captain as active when location is updated
+                status: nextStatus
             },
             { new: true }
         );
@@ -151,9 +156,12 @@ module.exports.updateLocation = async (req, res) => {
 
         console.log('✅ Captain location updated successfully:', captain.fullname.firstname, location);
         res.status(200).json({
-            message: 'Location updated successfully',
+            message: isVerified
+                ? 'Location updated successfully'
+                : 'Location saved — complete verification to receive ride requests',
             location: captain.location,
-            status: captain.status
+            status: captain.status,
+            isVerified
         });
 
     } catch (error) {

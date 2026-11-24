@@ -286,6 +286,99 @@ describe('YENKO RIDE API', () => {
         assert.ok(Array.isArray(mine.data));
     });
 
+    it('keeps ride chat private to its two participants', async () => {
+        const userModel = require('../models/user.model');
+        const captainModel = require('../models/captain.model');
+        const Ride = require('../models/ride.model');
+        const rider = await userModel.findOne({ email: state.riderEmail });
+        const captain = await captainModel.findOne({ email: state.captainEmail });
+        const ride = await Ride.create({
+            user: rider._id,
+            captain: captain._id,
+            pickup: 'Adum, Kumasi',
+            destination: 'Kejetia Market, Kumasi',
+            fare: 10,
+            otp: '1111',
+            status: 'ongoing',
+        });
+
+        const sent = await api('/chat/send', {
+            method: 'POST',
+            token: state.riderToken,
+            body: { rideId: ride._id.toString(), message: 'Hello captain' },
+        });
+        assert.equal(sent.status, 201, JSON.stringify(sent.data));
+        assert.equal(String(sent.data.chatMessage.recipient), String(captain._id));
+
+        const captainHistory = await api(`/chat/history/${ride._id}`, { token: state.captainToken });
+        assert.equal(captainHistory.status, 200, JSON.stringify(captainHistory.data));
+        assert.equal(captainHistory.data.length, 1);
+
+        const reply = await api('/chat/send', {
+            method: 'POST',
+            token: state.captainToken,
+            body: { rideId: ride._id.toString(), message: 'On my way' },
+        });
+        assert.equal(reply.status, 201, JSON.stringify(reply.data));
+        assert.equal(String(reply.data.chatMessage.recipient), String(rider._id));
+
+        const outsider = await api(`/chat/history/${ride._id}`);
+        assert.equal(outsider.status, 401);
+
+        state.chatRideId = ride._id.toString();
+    });
+
+    it('creates and revokes a privacy-safe live trip link', async () => {
+        const created = await api('/trip/share', {
+            method: 'POST',
+            token: state.riderToken,
+            body: { rideId: state.chatRideId, minutes: 10 },
+        });
+        assert.equal(created.status, 201, JSON.stringify(created.data));
+        assert.match(created.data.url, /\/trip\//);
+
+        const token = created.data.token;
+        const publicView = await api(`/trip/${token}`);
+        assert.equal(publicView.status, 200, JSON.stringify(publicView.data));
+        assert.equal(publicView.data.ride.status, 'ongoing');
+        assert.ok(publicView.data.captain.firstname);
+        assert.equal(publicView.data.otp, undefined);
+        assert.equal(publicView.data.user, undefined);
+
+        const revoked = await api(`/trip/${token}`, { method: 'DELETE', token: state.riderToken });
+        assert.equal(revoked.status, 200);
+        const gone = await api(`/trip/${token}`);
+        assert.equal(gone.status, 404);
+    });
+
+    it('only dispatches verified captains', async () => {
+        const captainModel = require('../models/captain.model');
+        const captain = await captainModel.findOne({ email: state.captainEmail });
+        captain.isVerified = false;
+        await captain.save();
+
+        const pending = await api('/captains/update-location', {
+            method: 'POST',
+            token: state.captainToken,
+            body: { location: { ltd: 5.6037, lng: -0.187 } },
+        });
+        assert.equal(pending.status, 200, JSON.stringify(pending.data));
+        assert.equal(pending.data.status, 'inactive');
+        assert.equal(pending.data.isVerified, false);
+
+        captain.isVerified = true;
+        await captain.save();
+
+        const verified = await api('/captains/update-location', {
+            method: 'POST',
+            token: state.captainToken,
+            body: { location: { ltd: 5.6037, lng: -0.187 } },
+        });
+        assert.equal(verified.status, 200);
+        assert.equal(verified.data.status, 'active');
+        assert.equal(verified.data.isVerified, true);
+    });
+
     it('blocks non-admin riders from the fleet command centre', async () => {
         const stats = await api('/admin/stats', { token: state.riderToken });
         assert.equal(stats.status, 403);
@@ -318,5 +411,35 @@ describe('YENKO RIDE API', () => {
         const locations = await api('/admin/captains/locations', { token: state.riderToken });
         assert.equal(locations.status, 200);
         assert.ok(Array.isArray(locations.data));
+    });
+
+    it('lets operations reject a captain with a review note', async () => {
+        const submitted = await api('/driver-verification/submit', {
+            method: 'POST',
+            token: state.captainToken,
+            body: { documents: [{ type: 'license', url: 'data:image/png;base64,test' }] },
+        });
+        assert.equal(submitted.status, 201, JSON.stringify(submitted.data));
+
+        // The rider account was promoted to admin by the previous test.
+        const pending = await api('/driver-verification/pending', { token: state.riderToken });
+        assert.equal(pending.status, 200);
+        const item = pending.data.find(
+            (entry) => String(entry.captain?._id) === String(submitted.data.verification.captain)
+        );
+        assert.ok(item, 'submitted verification should appear in the admin queue');
+
+        const reviewed = await api(`/driver-verification/${item._id}/review`, {
+            method: 'PATCH',
+            token: state.riderToken,
+            body: { status: 'rejected', reviewNote: 'Please upload a clearer licence.' },
+        });
+        assert.equal(reviewed.status, 200, JSON.stringify(reviewed.data));
+        assert.equal(reviewed.data.verification.status, 'rejected');
+        assert.equal(reviewed.data.verification.reviewNote, 'Please upload a clearer licence.');
+
+        const mine = await api('/driver-verification/me', { token: state.captainToken });
+        assert.equal(mine.status, 200);
+        assert.equal(mine.data.status, 'rejected');
     });
 });

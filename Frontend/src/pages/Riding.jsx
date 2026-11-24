@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom'
 import LiveTracking from '../components/LiveTracking'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
 import RideCompleted from '../components/RideCompleted'
+import Chat from './Chat'
+import ShareRideButton from '../components/ShareRideButton'
 import { Brand } from '../components/ui/YenkoShell'
 
 const Riding = () => {
@@ -15,6 +17,7 @@ const Riding = () => {
     const navigate = useNavigate()
     const [rideCompleted, setRideCompleted] = useState(false)
     const [completedRideData, setCompletedRideData] = useState(null)
+    const [chatOpen, setChatOpen] = useState(false)
 
     useEffect(() => {
         if (socket) {
@@ -63,9 +66,20 @@ const Riding = () => {
             <div className='fixed left-3 top-3 z-20 rounded-xl bg-white/95 px-3 py-2 shadow-md backdrop-blur'>
                 <Brand compact />
             </div>
-            <Link to='/home' title='Back to YENKO home' className='fixed right-3 top-3 z-20 h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md'>
-                <i className="text-lg font-medium ri-home-5-line"></i>
-            </Link>
+            <div className='fixed right-3 top-3 z-20 flex items-center gap-2'>
+                <ShareRideButton ride={ride} role='rider' />
+                <button
+                    type='button'
+                    onClick={() => setChatOpen(true)}
+                    title='Chat with your YENKO Captain'
+                    className='flex h-10 w-10 items-center justify-center rounded-full bg-[#111] text-white shadow-md'
+                >
+                    💬
+                </button>
+                <Link to='/home' title='Back to YENKO home' className='h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md'>
+                    <i className="text-lg font-medium ri-home-5-line"></i>
+                </Link>
+            </div>
             <div className='h-1/2'>
                 <LiveTracking
                     ride={ride}
@@ -124,6 +138,10 @@ const Riding = () => {
                     <p className='text-blue-600 text-sm mt-1'>You'll be notified when you reach your destination</p>
                 </div>
             </div>
+
+            {chatOpen && (
+                <Chat ride={ride} viewerRole='rider' onClose={() => setChatOpen(false)} />
+            )}
         </div>
     )
 }

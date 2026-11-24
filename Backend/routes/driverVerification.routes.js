@@ -29,6 +29,7 @@ router.patch(
     '/:id/review',
     authAdmin,
     body('status').isIn(['approved', 'rejected']),
+    body('reviewNote').optional().isString().isLength({ max: 300 }),
     driverVerificationController.reviewVerification
 );
 

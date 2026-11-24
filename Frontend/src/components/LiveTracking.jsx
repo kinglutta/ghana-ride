@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap 
 import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
 import MapFallback from './MapFallback'
+import ShareRideButton from './ShareRideButton'
 import { SocketContext } from '../context/socket.context'
 import { getToken } from '../lib/authToken';
 
@@ -72,11 +73,12 @@ const TrackingMap = ({ currentPosition, captainPosition, showCaptain, routeCoord
     );
 };
 
-const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
+const LiveTracking = ({ ride, showCaptain = false, showRoute = false, showSos = true }) => {
     const [currentPosition, setCurrentPosition] = useState(center);
     const [captainPosition, setCaptainPosition] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState(null);
     const [sosActive, setSosActive] = useState(false);
+    const [sosAlertId, setSosAlertId] = useState(null);
     const { socket } = useContext(SocketContext);
 
     // Get initial position
@@ -123,23 +125,20 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const token = getToken();
+                    const token = getToken('rider');
                     const body = {
                         location: { ltd: latitude, lng: longitude },
                     };
                     if (ride) body.rideId = ride._id;
-                    await axios.post(
+                    const response = await axios.post(
                         `${import.meta.env.VITE_API_URL}/safety/sos`,
                         body,
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                     setSosActive(true);
-                    if (socket) {
-                        socket.emit('sos-activated', {
-                            location: { ltd: latitude, lng: longitude },
-                            rideId: ride ? ride._id : null,
-                        });
-                    }
+                    setSosAlertId(response.data.alert?._id || null);
+                    // Operations is alerted by the API, so the client does
+                    // not broadcast a second, duplicate alert.
                 } catch (err) {
                     console.error('SOS error:', err);
                 }
@@ -149,6 +148,25 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
+    };
+
+    // Resolve the alert this screen created, so Operations sees it close.
+    const resolveSOS = async () => {
+        if (!sosAlertId) {
+            setSosActive(false);
+            return;
+        }
+        try {
+            await axios.patch(
+                `${import.meta.env.VITE_API_URL}/safety/alerts/${sosAlertId}/resolve`,
+                {},
+                { headers: { Authorization: `Bearer ${getToken('rider')}` } }
+            );
+            setSosActive(false);
+            setSosAlertId(null);
+        } catch (err) {
+            console.error('Could not resolve SOS:', err);
+        }
     };
 
     // Listen for captain location updates if showing captain
@@ -241,26 +259,42 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
                 routeCoordinates={routeCoordinates}
             />
 
-            {/* SOS Emergency Button Overlay */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
-                <button
-                    onClick={handleSOS}
-                    disabled={sosActive}
-                    className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all transform active:scale-90 ${
-                        sosActive
-                            ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
-                            : 'bg-red-600 hover:bg-red-700'
-                    }`}
-                    title="Emergency SOS"
-                >
-                    <span className="text-2xl">{sosActive ? '✅' : '🚨'}</span>
-                </button>
-                {sosActive && (
-                    <div className="mt-2 text-xs text-red-600 font-medium text-center bg-red-50 px-2 py-1 rounded">
-                        SOS Active — Help on the way
-                    </div>
-                )}
-            </div>
+            {/* SOS Emergency Button Overlay — rider ride screens only */}
+            {showSos && (
+                <div className="absolute bottom-6 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+                    <button
+                        onClick={handleSOS}
+                        disabled={sosActive}
+                        className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all transform active:scale-90 ${
+                            sosActive
+                                ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
+                                : 'bg-red-600 hover:bg-red-700'
+                        }`}
+                        title="Emergency SOS"
+                    >
+                        <span className="text-2xl">{sosActive ? '✅' : '🚨'}</span>
+                    </button>
+                    {sosActive && (
+                        <>
+                            <div className="rounded bg-red-50 px-2 py-1 text-center text-xs font-medium text-red-600">
+                                SOS Active — Operations alerted
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    type='button'
+                                    onClick={resolveSOS}
+                                    className='rounded-lg bg-white px-2 py-1 text-[11px] font-bold text-[#111] shadow'
+                                >
+                                    Resolve
+                                </button>
+                                {ride?._id && (
+                                    <ShareRideButton ride={ride} role='rider' emergency />
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
         </MapContainer>
     );
 };

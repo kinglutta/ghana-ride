@@ -38,6 +38,9 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Fare Calculation** - Dynamic pricing based on distance and vehicle type
 - **Ride History** - View past rides and receipts
 - **Payment Integration** - Secure payment processing (simulated)
+- **Private Ride Chat** - Message your assigned Captain; only the two ride participants can read it
+- **Live Trip Links** - Share an expiring, revocable read-only tracking page with a trusted contact
+- **SOS Safety Alerts** - Alert Operations instantly and attach an emergency live link
 
 ### 🚕 Captain Features
 
@@ -47,6 +50,9 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Ride Management** - Start, track, and complete rides with OTP verification
 - **Earnings Dashboard** - Track daily/weekly earnings and ride statistics
 - **Status Management** - Toggle between active/inactive status
+- **Verification Gate** - Only verified Captains enter dispatch; unverified accounts stay out of offers
+- **Ride Chat** - Reply to your Rider from the active ride screen
+- **Decision Notifications** - Get told when Operations approves or rejects your documents
 
 ### 🔧 Technical Features
 
@@ -57,6 +63,17 @@ https://github.com/user-attachments/assets/c67edec8-8364-4ec1-8c48-e01d6d7e03c4
 - **Error Handling** - Comprehensive error handling and validation
 - **Security** - JWT authentication, password hashing, and token blacklisting
 - **Auto-reconnection** - Automatic socket reconnection and token mismatch handling
+- **Scoped Socket Rooms** - Room membership is derived from verified tokens, including `ride:<rideId>` for chat
+- **Trust & Comms APIs** - `/chat/*`, `/trip/share`, public `/trip/:token`, and verification review endpoints
+
+---
+
+## 🛡️ Trust & Comms
+
+- **Chat** persists through `POST /chat/send` and is delivered live to the ride room. Recipients come from the ride, never the request body, and an unauthenticated client cannot inject messages.
+- **Live trip sharing** creates a random, expiring token via `POST /trip/share`. Anyone with the link can open `/trip/:token` for a privacy-filtered OpenStreetMap view; the creator can revoke it with `DELETE /trip/:token`.
+- **Verification** is required for dispatch. Operations can approve or reject with a review note from the command centre, and the Captain receives the decision in-app.
+- **SOS** is sent once by the API to Operations, and the Rider can attach an emergency live link for a trusted contact.
 
 ---
 

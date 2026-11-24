@@ -22,15 +22,31 @@ module.exports.submitVerification = [
                 documents
             );
 
-            // Notify admins about the new submission
             const captain = await require('../models/captain.model').findById(req.captain._id);
+
+            // Captain confirmation goes to the captain notification stream.
             await NotificationService.create({
-                userId: req.user?._id || req.captain._id,
+                captainId: req.captain._id,
                 type: 'system',
-                title: 'Driver Verification Submitted',
-                body: `Driver ${captain?.fullname?.firstname || ''} submitted verification documents`,
-                data: { driverVerificationId: verification._id },
+                title: 'Verification submitted',
+                body: 'Your documents are with YENKO Operations. We will review them shortly.',
+                data: { verificationId: verification._id, status: 'pending' },
             });
+
+            // Operations sees new submissions live in the command centre.
+            const io = req.app.get('io');
+            if (io) {
+                io.to('admin').emit('verification-submitted', {
+                    verificationId: verification._id,
+                    captain: {
+                        _id: req.captain._id,
+                        fullname: captain?.fullname,
+                        vehicle: captain?.vehicle,
+                    },
+                    documents: verification.documents?.length || 0,
+                    submittedAt: verification.createdAt,
+                });
+            }
 
             return res.status(201).json({
                 message: 'Verification submitted',
@@ -77,6 +93,7 @@ module.exports.getPendingVerifications = async (req, res) => {
  */
 module.exports.reviewVerification = [
     body('status').isIn(['approved', 'rejected']).withMessage('Status must be approved or rejected'),
+    body('reviewNote').optional().isString().isLength({ max: 300 }),
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -91,6 +108,26 @@ module.exports.reviewVerification = [
                 req.user?._id?.toString() || 'admin',
                 reviewNote
             );
+
+            // The Captain always learns the decision in their own account.
+            await NotificationService.create({
+                captainId: verification.captain,
+                type: 'system',
+                title: status === 'approved' ? 'You are verified' : 'Verification needs attention',
+                body: status === 'approved'
+                    ? 'Your YENKO Captain account is verified. You can now receive ride requests.'
+                    : (reviewNote || 'Please check your documents and submit again.'),
+                data: { verificationId: verification._id, status },
+            });
+
+            const io = req.app.get('io');
+            if (io) {
+                io.to('captain').emit('verification-reviewed', {
+                    captainId: String(verification.captain),
+                    status,
+                    reviewNote,
+                });
+            }
 
             return res.status(200).json({
                 message: `Verification ${status}`,

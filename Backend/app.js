@@ -17,6 +17,7 @@ const referralRoutes = require('./routes/referral.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const chatRoutes = require('./routes/chat.routes');
 const driverVerificationRoutes = require('./routes/driverVerification.routes');
+const tripRoutes = require('./routes/trip.routes');
 const disputeRoutes = require('./routes/dispute.routes');
 
 // CORS configuration for production and development
@@ -83,6 +84,7 @@ app.use('/referrals', referralRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/chat', chatRoutes);
 app.use('/driver-verification', driverVerificationRoutes);
+app.use('/trip', tripRoutes);
 app.use('/disputes', disputeRoutes);
 
 module.exports = app;

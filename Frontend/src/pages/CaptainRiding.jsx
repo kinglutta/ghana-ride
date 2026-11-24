@@ -4,11 +4,14 @@ import FinishRide from '../components/FinishRide'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import LiveTracking from '../components/LiveTracking'
+import Chat from './Chat'
+import ShareRideButton from '../components/ShareRideButton'
 import { Brand } from '../components/ui/YenkoShell'
 
 const CaptainRiding = () => {
 
     const [finishRidePanel, setFinishRidePanel] = useState(false)
+    const [chatOpen, setChatOpen] = useState(false)
     const finishRidePanelRef = useRef(null)
     const location = useLocation()
     const rideData = location.state?.ride
@@ -35,9 +38,20 @@ const CaptainRiding = () => {
                 <div className='rounded-xl bg-white/95 px-3 py-2 shadow-md backdrop-blur'>
                     <Brand compact />
                 </div>
-                <Link to='/captain-home' title='Back to Captain home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md'>
-                    <i className="text-lg font-medium ri-home-5-line"></i>
-                </Link>
+                <div className='flex items-center gap-2'>
+                    <ShareRideButton ride={rideData} role='captain' />
+                    <button
+                        type='button'
+                        onClick={() => setChatOpen(true)}
+                        title='Chat with your rider'
+                        className='flex h-10 w-10 items-center justify-center rounded-full bg-[#f5c400] text-[#111] shadow-md'
+                    >
+                        💬
+                    </button>
+                    <Link to='/captain-home' title='Back to Captain home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md'>
+                        <i className="text-lg font-medium ri-home-5-line"></i>
+                    </Link>
+                </div>
             </div>
 
             <div className='h-1/5 p-6 flex items-center justify-between relative bg-yellow-400 pt-10'
@@ -62,9 +76,13 @@ const CaptainRiding = () => {
                     ride={rideData}
                     showCaptain={false}
                     showRoute={true}
+                    showSos={false}
                 />
             </div>
 
+            {chatOpen && (
+                <Chat ride={rideData} viewerRole='captain' onClose={() => setChatOpen(false)} />
+            )}
         </div>
     )
 }

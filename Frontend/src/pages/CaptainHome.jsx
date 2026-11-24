@@ -38,7 +38,8 @@ const CaptainHome = () => {
 
             socket.emit('join', {
                 userId: captain._id,
-                userType: 'captain'
+                userType: 'captain',
+                token: getToken('captain')
             })
             console.log('🚪 Captain joined socket room');
 

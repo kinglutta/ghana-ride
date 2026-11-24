@@ -7,11 +7,12 @@ const notificationSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user',
-        required: true,
+        required: function () { return !this.captain; },
     },
     captain: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'captain',
+        required: function () { return !this.user; },
     },
     type: {
         type: String,

@@ -97,9 +97,10 @@ module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
     console.log('🔍 Searching for captains near:', { ltd, lng, radius: radius + 'km' });
 
     try {
-        // First, get all active captains
+        // Only verified, active captains may receive ride offers.
         const allActiveCaptains = await captainModel.find({
             status: 'active',
+            isVerified: true,
             location: { $exists: true }
         });
 
@@ -119,7 +120,8 @@ module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
                         $centerSphere: [[lng, ltd], radius / 6371] // Note: lng first, then ltd
                     }
                 },
-                status: 'active'
+                status: 'active',
+                isVerified: true
             });
             console.log('📍 MongoDB geo query found:', geoQueryCaptains.length, 'captains');
         } catch (geoError) {

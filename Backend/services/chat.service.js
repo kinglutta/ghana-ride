@@ -2,31 +2,49 @@ const ChatMessage = require('../models/chatMessage.model');
 const Ride = require('../models/ride.model');
 
 /**
- * ChatService — real-time chat between passenger and driver during a ride
+ * ChatService — private rider/captain messaging, scoped to one ride.
+ * Every operation checks that the caller actually belongs to the ride and
+ * derives the recipient from the ride rather than trusting the request body.
  */
 class ChatService {
-    /**
-     * Send a chat message
-     */
-    static async sendMessage({ rideId, senderId, senderModel, recipientId, message, messageType = 'text' }) {
-        // Verify the ride exists and both parties are part of it
+    static participantRole(ride, accountId) {
+        const id = String(accountId);
+        if (ride.user && String(ride.user) === id) return 'user';
+        if (ride.captain && String(ride.captain) === id) return 'captain';
+        return null;
+    }
+
+    static assertParticipant(ride, accountId) {
+        const role = ChatService.participantRole(ride, accountId);
+        if (!role) throw new Error('Not authorized to use chat for this ride');
+        return role;
+    }
+
+    static async getRide(rideId) {
         const ride = await Ride.findById(rideId);
-        if (!ride) {
-            throw new Error('Ride not found');
+        if (!ride) throw new Error('Ride not found');
+        return ride;
+    }
+
+    /** Persist a message between the two people on a ride. */
+    static async sendMessage({ rideId, senderId, senderModel, message, messageType = 'text' }) {
+        const ride = await ChatService.getRide(rideId);
+        const role = ChatService.assertParticipant(ride, senderId);
+
+        if (role !== senderModel) {
+            throw new Error('Account type does not match this ride');
         }
 
-        const isPassenger = ride.user.toString() === senderId;
-        const isDriver = ride.captain && ride.captain.toString() === senderId;
-
-        if (!isPassenger && !isDriver) {
-            throw new Error('Not authorized to chat on this ride');
+        const recipient = role === 'user' ? ride.captain : ride.user;
+        if (!recipient) {
+            throw new Error('Your ride companion is not assigned yet');
         }
 
         const chatMessage = await ChatMessage.create({
             ride: rideId,
             sender: senderId,
-            senderModel,
-            recipient: recipientId,
+            senderModel: role,
+            recipient,
             message,
             messageType,
         });
@@ -34,42 +52,35 @@ class ChatService {
         return chatMessage;
     }
 
-    /**
-     * Get chat history for a ride
-     */
-    static async getChatHistory(rideId, userId, userModel) {
-        const ride = await Ride.findById(rideId);
-        if (!ride) {
-            throw new Error('Ride not found');
-        }
-
-        const isPassenger = ride.user.toString() === userId;
-        const isDriver = ride.captain && ride.captain.toString() === userId;
-
-        if (!isPassenger && !isDriver) {
-            throw new Error('Not authorized to view chat for this ride');
-        }
+    /** Full conversation for a ride, only for its two participants. */
+    static async getChatHistory(rideId, accountId) {
+        const ride = await ChatService.getRide(rideId);
+        ChatService.assertParticipant(ride, accountId);
 
         return ChatMessage.find({ ride: rideId })
             .sort({ createdAt: 1 })
             .populate('sender', 'fullname');
     }
 
-    /**
-     * Mark messages as read
-     */
-    static async markAsRead(rideId, recipientId) {
+    /** Mark messages addressed to this account as read. */
+    static async markAsRead(rideId, accountId) {
+        const ride = await ChatService.getRide(rideId);
+        ChatService.assertParticipant(ride, accountId);
+
         return ChatMessage.updateMany(
-            { ride: rideId, recipient: recipientId, isRead: false },
+            { ride: rideId, recipient: accountId, isRead: false },
             { isRead: true, readAt: new Date() }
         );
     }
 
-    /**
-     * Get unread message count for a user
-     */
-    static async getUnreadCount(userId) {
-        return ChatMessage.countDocuments({ recipient: userId, isRead: false });
+    /** Unread count for a rider or captain, excluding their own messages. */
+    static async getUnreadCount(accountId, accountModel) {
+        const otherModel = accountModel === 'captain' ? 'user' : 'captain';
+        return ChatMessage.countDocuments({
+            recipient: accountId,
+            senderModel: otherModel,
+            isRead: false,
+        });
     }
 }
 

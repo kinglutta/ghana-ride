@@ -1,6 +1,7 @@
 require('dotenv').config();
 const http = require('http');
 const socketIo = require('socket.io');
+const jwt = require('jsonwebtoken');
 const app = require('./app');
 
 const port = process.env.PORT || 3000;
@@ -63,79 +64,192 @@ const io = socketIo(server, {
 // Make Socket.IO instance available to the app.
 app.set('io', io);
 
+/**
+ * Identity for socket rooms always comes from a verified token. Client-supplied
+ * userId/userType values are ignored — otherwise any visitor could join the
+ * admin room and read safety alerts.
+ */
+const authenticateSocketToken = async (token) => {
+    if (!token) return null;
+
+    const blacklistTokenModel = require('./models/blacklistToken.model');
+    if (await blacklistTokenModel.findOne({ token })) {
+        throw new Error('Session expired');
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [userModel, captainModel] = await Promise.all([
+        require('./models/user.model'),
+        require('./models/captain.model'),
+    ]);
+
+    const [user, captain] = await Promise.all([
+        userModel.findById(decoded._id),
+        captainModel.findById(decoded._id),
+    ]);
+
+    if (user) {
+        return {
+            id: String(user._id),
+            role: user.role === 'admin' ? 'admin' : 'user',
+            account: user,
+        };
+    }
+    if (captain) {
+        return { id: String(captain._id), role: 'captain', account: captain };
+    }
+    return null;
+};
+
+/** Only deliver targeted ride events to people who actually belong to it. */
+const rideRecipients = async (rideId, identity) => {
+    if (!rideId || !identity) return null;
+
+    const ride = await require('./models/ride.model').findById(rideId).lean();
+    if (!ride) return null;
+
+    const rider = ride.user ? String(ride.user) : null;
+    const captain = ride.captain ? String(ride.captain) : null;
+    if (identity.id !== rider && identity.id !== captain) return null;
+
+    return [rider, captain].filter(Boolean);
+};
+
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
+    const can = (...roles) => !!socket.identity && roles.includes(socket.identity.role);
+
     socket.on('join', async (data) => {
-        const { userType, userId } = data;
-        console.log(`${userType} joined:`, socket.id, 'userId:', userId);
-        socket.join(userType);
-        socket.userId = userId;
-        socket.userType = userType;
-
-        if (userType === 'captain') {
-            try {
-                const captainModel = require('./models/captain.model');
-                await captainModel.findByIdAndUpdate(userId, { socketId: socket.id });
-                console.log('Captain socketId updated in database:', socket.id);
-            } catch (error) {
-                console.error('Error updating captain socketId:', error);
+        try {
+            const identity = await authenticateSocketToken(data?.token);
+            if (!identity) {
+                return socket.emit('join-error', { message: 'Please sign in again' });
             }
+
+            socket.identity = identity;
+            socket.userId = identity.id;
+            socket.userType = identity.role === 'admin' ? 'admin' : identity.role;
+
+            // Exact-ID rooms power targeted ride events. Legacy role rooms stay
+            // for older screens; per-account rooms prevent cross-account leaks.
+            socket.join(identity.id);
+            socket.join(`${identity.role}:${identity.id}`);
+            socket.join(socket.userType);
+            if (identity.role === 'admin') socket.join('admin');
+
+            if (identity.role === 'captain') {
+                try {
+                    const captainModel = require('./models/captain.model');
+                    await captainModel.findByIdAndUpdate(identity.id, { socketId: socket.id });
+                    console.log('Captain socketId updated in database:', socket.id);
+                } catch (error) {
+                    console.error('Error updating captain socketId:', error);
+                }
+            }
+
+            const confirmation = {
+                userType: socket.userType,
+                userId: identity.id,
+                role: identity.role,
+                socketId: socket.id,
+            };
+            socket.emit('join-confirmed', confirmation);
+            // Alias used by the captain home screen; keeps the old listener working.
+            socket.emit('connection-confirmed', confirmation);
+
+            if (identity.role === 'captain') {
+                socket.emit('test-captain-connection', { message: 'Captain connection successful!' });
+            }
+        } catch (error) {
+            socket.emit('join-error', { message: 'Could not verify your session' });
         }
+    });
 
-        socket.emit('join-confirmed', { userType, userId, socketId: socket.id });
+    /**
+     * Ride-scoped rooms. Identity comes from the same verified token, so only
+     * the Rider and Captain on a ride can hear its chat messages.
+     */
+    socket.on('ride:join', async (data) => {
+        const reject = (message) => socket.emit('ride:join-error', { message });
 
-        // Alias used by the captain home screen; keeps the old listener working.
-        socket.emit('connection-confirmed', { userType, userId, socketId: socket.id });
+        try {
+            const identity = await authenticateSocketToken(data?.token);
+            if (!identity) return reject('Please sign in again');
+            if (identity.role === 'admin') return reject('Admin accounts cannot join ride chat');
 
-        if (userType === 'admin') {
-            socket.join('admin');
-        }
+            const ride = await require('./models/ride.model').findById(data?.rideId);
+            if (!ride) return reject('Ride not found');
 
-        if (userType === 'captain') {
-            socket.emit('test-captain-connection', { message: 'Captain connection successful!' });
+            const isRider = identity.role === 'user' && ride.user && String(ride.user) === identity.id;
+            const isCaptain = identity.role === 'captain' && ride.captain && String(ride.captain) === identity.id;
+            if (!isRider && !isCaptain) return reject('You are not part of this ride');
+
+            socket.identity = socket.identity || identity;
+            socket.join(identity.id);
+            socket.join(`${identity.role}:${identity.id}`);
+            socket.join(`ride:${data.rideId}`);
+            socket.emit('ride:joined', { rideId: data.rideId, role: identity.role });
+        } catch (error) {
+            reject('Could not verify your session');
         }
     });
 
     socket.on('update-location-captain', (data) => {
+        if (!can('captain')) return;
         socket.to('user').emit('captain-location-update', data);
     });
 
     socket.on('ride-request', (data) => {
+        if (!can('user')) return;
         socket.to('captain').emit('new-ride-request', data);
     });
 
-    socket.on('ride-accepted', (data) => {
-        io.to(data.userId).emit('ride-accepted', data);
+    socket.on('ride-accepted', async (data) => {
+        if (!can('captain')) return;
+        try {
+            const recipients = await rideRecipients(data?.ride?._id || data?.rideId || data?._id, socket.identity);
+            if (!recipients) return;
+            recipients.forEach((id) => io.to(id).emit('ride-accepted', data));
+        } catch (error) {
+            console.error('Could not verify ride for acceptance event:', error.message);
+        }
     });
 
-    socket.on('ride-completed', (data) => {
-        io.to(data.userId).emit('ride-completed', data);
-        io.to(data.captainId).emit('ride-completed', data);
+    socket.on('ride-completed', async (data) => {
+        if (!can('captain')) return;
+        try {
+            const recipients = await rideRecipients(data?.ride?._id || data?.rideId || data?._id, socket.identity);
+            if (!recipients) return;
+            recipients.forEach((id) => io.to(id).emit('ride-completed', data));
+        } catch (error) {
+            console.error('Could not verify ride for completion event:', error.message);
+        }
     });
 
     socket.on('ride-declined', (data) => {
+        if (!can('captain')) return;
         console.log('Ride declined by captain:', data);
         socket.to('user').emit('ride-declined', data);
     });
 
     socket.on('ride-paid', (data) => {
         // PaymentPage emits this after a successful REST payment.
+        if (!can('user')) return;
         socket.to('user').emit('ride-paid', data);
         socket.to('captain').emit('ride-paid', data);
     });
 
-    socket.on('new-chat-message', (data) => {
-        // Chat messages are persisted over REST; Socket.IO only delivers them live.
-        socket.to('user').emit('new-chat-message', data);
-        socket.to('captain').emit('new-chat-message', data);
-    });
+    // Chat is delivered server-side to ride:<rideId> after persistence.
+    // A client-emitted chat event is deliberately ignored to prevent spoofing.
 
     socket.on('sos-activated', (data) => {
+        if (!can('user')) return;
         socket.to('admin').emit('sos-alert', data);
     });
 
     socket.on('sos-resolved', (data) => {
+        if (!can('user')) return;
         socket.to('admin').emit('sos-resolved', data);
     });
 

@@ -6,10 +6,9 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useContext } from 'react';
-import { SocketContext } from '../context/socket.context';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
+import ShareRideButton from '../components/ShareRideButton';
 import { getToken } from '../lib/authToken';
 
 const SafetyPage = ({ ride }) => {
@@ -23,8 +22,6 @@ const SafetyPage = ({ ride }) => {
     const [sosLoading, setSosLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [sosMessage, setSosMessage] = useState('');
-
-    const { socket } = useContext(SocketContext);
 
     useEffect(() => {
         fetchContacts();
@@ -109,15 +106,9 @@ const SafetyPage = ({ ride }) => {
                     );
                     setSosActive(true);
                     setActiveAlertId(res.data.alert?._id || null);
+                    // The API already alerts Operations in real time — no
+                    // duplicate client broadcast needed.
                     setSosMessage(res.data.message);
-                    // Broadcast via socket
-                    if (socket) {
-                        socket.emit('sos-activated', {
-                            alertId: res.data.alert._id,
-                            location: { ltd: latitude, lng: longitude },
-                            rideId: ride ? ride._id : null,
-                        });
-                    }
                 } catch (err) {
                     setSosMessage(err.response?.data?.message || 'SOS activation failed');
                 } finally {
@@ -204,12 +195,16 @@ const SafetyPage = ({ ride }) => {
                         </p>
                     )}
                     {sosActive && (
-                        <CustomButton
-                            title="Resolve SOS"
-                            bgVariant="outline"
-                            onClick={resolveSOS}
-                            className="mt-4"
-                        />
+                        <div className='mt-4 flex flex-col items-center gap-3'>
+                            <CustomButton
+                                title="Resolve SOS"
+                                bgVariant="outline"
+                                onClick={resolveSOS}
+                            />
+                            {ride?._id && (
+                                <ShareRideButton ride={ride} role='rider' emergency />
+                            )}
+                        </div>
                     )}
                 </div>
 

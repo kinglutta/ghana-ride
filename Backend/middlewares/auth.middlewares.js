@@ -174,5 +174,45 @@ module.exports.authAdmin = async (req, res, next) => {
     });
 };
 
+/**
+ * Shared-identity auth for features both sides of a ride can use (chat, trip
+ * sharing). The account type is derived from the token, never from the body,
+ * so a rider token cannot be used to act as a captain or the other way round.
+ */
+module.exports.authUserOrCaptain = async (req, res, next) => {
+    const token = req.cookies.authToken || req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized - No token provided' });
+    }
+
+    try {
+        if (await blacklistTokenModel.findOne({ token })) {
+            return res.status(401).json({ message: 'Unauthorized - Token blacklisted' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const user = await userModel.findById(decoded._id);
+        if (user) {
+            req.user = user;
+            return next();
+        }
+
+        const captain = await captainModel.findById(decoded._id);
+        if (captain) {
+            req.captain = captain;
+            return next();
+        }
+
+        return res.status(401).json({ message: 'Unauthorized - Account not found' });
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Unauthorized - Please sign in again' });
+        }
+        return res.status(500).json({ message: 'Something went wrong' });
+    }
+};
+
 
 

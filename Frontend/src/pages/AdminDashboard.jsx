@@ -3,9 +3,10 @@
  * Live operations, verification queues, analytics and a captain fleet map.
  * Backed only by the project's free Node/MongoDB API and OpenStreetMap.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { SocketContext } from '../context/socket.context';
 import RoleShell from '../components/ui/RoleShell';
 import AdminFleetMap from '../components/AdminFleetMap';
 import {
@@ -48,7 +49,7 @@ const authHeaders = () => {
 
 const settled = (result, fallback) => (result.status === 'fulfilled' ? result.data : fallback);
 
-const QueueCard = ({ title, icon, items, empty, render, actionLabel, onAction }) => (
+const QueueCard = ({ title, icon, items, empty, render, actionLabel, onAction, renderActions }) => (
     <Panel>
         <div className='mb-3 flex items-center justify-between'>
             <p className='text-sm font-black text-ink'>{icon} {title}</p>
@@ -61,7 +62,7 @@ const QueueCard = ({ title, icon, items, empty, render, actionLabel, onAction })
                 {items.map((item, index) => (
                     <div key={item._id || index} className='py-3 first:pt-0 last:pb-0'>
                         {render(item)}
-                        {onAction && (
+                        {renderActions ? renderActions(item) : onAction ? (
                             <button
                                 type='button'
                                 onClick={() => onAction(item)}
@@ -69,7 +70,7 @@ const QueueCard = ({ title, icon, items, empty, render, actionLabel, onAction })
                             >
                                 {actionLabel}
                             </button>
-                        )}
+                        ) : null}
                     </div>
                 ))}
             </div>
@@ -78,9 +79,12 @@ const QueueCard = ({ title, icon, items, empty, render, actionLabel, onAction })
 );
 
 const AdminDashboard = () => {
+    const { socket } = useContext(SocketContext);
     const [data, setData] = useState({});
     const [loading, setLoading] = useState(true);
     const [notice, setNotice] = useState('');
+    const [rejectingId, setRejectingId] = useState(null);
+    const [rejectNote, setRejectNote] = useState('');
 
     const load = useCallback(async () => {
         const requests = Object.entries(ENDPOINTS).map(async ([key, path]) => {
@@ -102,6 +106,23 @@ const AdminDashboard = () => {
     useEffect(() => {
         load();
     }, [load]);
+
+    // New submissions and safety alerts appear without a manual refresh.
+    useEffect(() => {
+        if (!socket) return;
+        const token = getToken('admin');
+        if (token) {
+            socket.emit('join', { userType: 'admin', token });
+        }
+
+        const onIncoming = () => load();
+        socket.on('verification-submitted', onIncoming);
+        socket.on('sos-alert', onIncoming);
+        return () => {
+            socket.off('verification-submitted', onIncoming);
+            socket.off('sos-alert', onIncoming);
+        };
+    }, [socket, load]);
 
     const mutate = async (method, path, body) => {
         setNotice('');
@@ -218,8 +239,6 @@ const AdminDashboard = () => {
                     icon='🪪'
                     items={queues.pendingVerification || []}
                     empty='No pending documents'
-                    actionLabel='Approve'
-                    onAction={(item) => mutate('PATCH', `/driver-verification/${item._id}/review`, { status: 'approved' })}
                     render={(item) => (
                         <>
                             <p className='text-sm font-bold text-ink'>
@@ -227,6 +246,58 @@ const AdminDashboard = () => {
                             </p>
                             <p className='text-xs text-gray-500'>{item.captain?.vehicle?.plate || 'No plate'}</p>
                         </>
+                    )}
+                    renderActions={(item) => rejectingId === item._id ? (
+                        <div className='mt-2'>
+                            <input
+                                type='text'
+                                maxLength={300}
+                                value={rejectNote}
+                                onChange={(event) => setRejectNote(event.target.value)}
+                                placeholder='Reason for rejection (optional)'
+                                className='w-full rounded-lg border border-gray-200 px-2 py-1 text-[11px] outline-none focus:border-yenko'
+                            />
+                            <div className='mt-2 flex gap-2'>
+                                <button
+                                    type='button'
+                                    onClick={() => {
+                                        mutate('PATCH', `/driver-verification/${item._id}/review`, {
+                                            status: 'rejected',
+                                            reviewNote: rejectNote,
+                                        });
+                                        setRejectingId(null);
+                                        setRejectNote('');
+                                    }}
+                                    className='rounded-lg bg-red-600 px-3 py-1 text-[11px] font-bold text-white hover:bg-red-700'
+                                >
+                                    Confirm reject
+                                </button>
+                                <button
+                                    type='button'
+                                    onClick={() => { setRejectingId(null); setRejectNote(''); }}
+                                    className='rounded-lg bg-gray-100 px-3 py-1 text-[11px] font-bold text-ink'
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className='mt-2 flex gap-2'>
+                            <button
+                                type='button'
+                                onClick={() => mutate('PATCH', `/driver-verification/${item._id}/review`, { status: 'approved' })}
+                                className='rounded-lg bg-gray-100 px-3 py-1 text-[11px] font-bold text-ink hover:bg-yenko'
+                            >
+                                Approve
+                            </button>
+                            <button
+                                type='button'
+                                onClick={() => { setRejectingId(item._id); setRejectNote(''); }}
+                                className='rounded-lg bg-red-50 px-3 py-1 text-[11px] font-bold text-red-600 hover:bg-red-100'
+                            >
+                                Reject
+                            </button>
+                        </div>
                     )}
                 />
                 <QueueCard

@@ -1,35 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const chatController = require('../controllers/chat.controller');
-const authMiddleware = require('../middlewares/auth.middlewares');
+const { authUserOrCaptain } = require('../middlewares/auth.middlewares');
 const { body } = require('express-validator');
 
+// Chat is shared by Riders and Captains. Identity comes from the token; the
+// ride itself decides who the recipient is.
 router.post(
     '/send',
-    authMiddleware.authUser,
+    authUserOrCaptain,
     body('rideId').isMongoId(),
-    body('recipientId').isMongoId(),
-    body('message').notEmpty(),
+    body('message').trim().notEmpty().isLength({ max: 500 }),
     body('messageType').optional().isIn(['text', 'location', 'system']),
     chatController.sendMessage
 );
 
-router.get(
-    '/history/:rideId',
-    authMiddleware.authUser,
-    chatController.getChatHistory
-);
-
-router.post(
-    '/read/:rideId',
-    authMiddleware.authUser,
-    chatController.markAsRead
-);
-
-router.get(
-    '/unread-count',
-    authMiddleware.authUser,
-    chatController.getUnreadCount
-);
+router.get('/history/:rideId', authUserOrCaptain, chatController.getChatHistory);
+router.post('/read/:rideId', authUserOrCaptain, chatController.markAsRead);
+router.get('/unread-count', authUserOrCaptain, chatController.getUnreadCount);
 
 module.exports = router;

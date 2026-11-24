@@ -1,14 +1,14 @@
 const ChatService = require('../services/chat.service');
-const { validationResult } = require('express-validator');
-const { body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
-/**
- * POST /api/chat/send
- */
+const identity = (req) => (req.captain
+    ? { id: req.captain._id, model: 'captain' }
+    : { id: req.user._id, model: 'user' });
+
+/** POST /chat/send — persisted first, then delivered to the ride room only. */
 module.exports.sendMessage = [
     body('rideId').isMongoId().withMessage('Invalid ride id'),
-    body('recipientId').isMongoId().withMessage('Invalid recipient id'),
-    body('message').notEmpty().withMessage('Message required'),
+    body('message').trim().notEmpty().withMessage('Message required').isLength({ max: 500 }),
     body('messageType').optional().isIn(['text', 'location', 'system']),
     async (req, res) => {
         const errors = validationResult(req);
@@ -17,74 +17,58 @@ module.exports.sendMessage = [
         }
 
         try {
-            const { rideId, recipientId, message, messageType } = req.body;
-            // Determine sender model based on auth middleware (user or captain)
-            const senderModel = req.captain ? 'captain' : 'user';
-            const senderId = req.captain ? req.captain._id : req.user._id;
+            const { rideId, message, messageType } = req.body;
+            const sender = identity(req);
 
             const chatMessage = await ChatService.sendMessage({
                 rideId,
-                senderId,
-                senderModel,
-                recipientId,
-                message,
+                senderId: sender.id,
+                senderModel: sender.model,
+                message: message.trim(),
                 messageType: messageType || 'text',
             });
 
-            return res.status(201).json({
-                message: 'Message sent',
-                chatMessage,
-            });
+            const io = req.app.get('io');
+            if (io) {
+                io.to(`ride:${rideId}`).emit('new-chat-message', chatMessage);
+            }
+
+            return res.status(201).json({ message: 'Message sent', chatMessage });
         } catch (err) {
-            console.error('❌ Error sending chat message:', err);
             return res.status(400).json({ message: err.message });
         }
     },
 ];
 
-/**
- * GET /api/chat/history/:rideId
- */
+/** GET /chat/history/:rideId */
 module.exports.getChatHistory = async (req, res) => {
     try {
-        const { rideId } = req.params;
-        const senderModel = req.captain ? 'captain' : 'user';
-        const senderId = req.captain ? req.captain._id : req.user._id;
-
-        const messages = await ChatService.getChatHistory(rideId, senderId, senderModel);
+        const { id } = identity(req);
+        const messages = await ChatService.getChatHistory(req.params.rideId, id);
         return res.status(200).json(messages);
     } catch (err) {
-        console.error('❌ Error fetching chat history:', err);
         return res.status(400).json({ message: err.message });
     }
 };
 
-/**
- * POST /api/chat/read/:rideId
- */
+/** POST /chat/read/:rideId */
 module.exports.markAsRead = async (req, res) => {
     try {
-        const { rideId } = req.params;
-        const senderId = req.captain ? req.captain._id : req.user._id;
-
-        await ChatService.markAsRead(rideId, senderId);
+        const { id } = identity(req);
+        await ChatService.markAsRead(req.params.rideId, id);
         return res.status(200).json({ message: 'Messages marked as read' });
     } catch (err) {
-        console.error('❌ Error marking messages as read:', err);
-        return res.status(500).json({ message: err.message });
+        return res.status(400).json({ message: err.message });
     }
 };
 
-/**
- * GET /api/chat/unread-count
- */
+/** GET /chat/unread-count */
 module.exports.getUnreadCount = async (req, res) => {
     try {
-        const senderId = req.captain ? req.captain._id : req.user._id;
-        const count = await ChatService.getUnreadCount(senderId);
-        return res.status(200).json({ unreadCount: count });
+        const { id, model } = identity(req);
+        const unreadCount = await ChatService.getUnreadCount(id, model);
+        return res.status(200).json({ unreadCount });
     } catch (err) {
-        console.error('❌ Error fetching unread count:', err);
         return res.status(500).json({ message: err.message });
     }
 };

@@ -46,7 +46,7 @@ const Home = () => {
 
     useEffect(() => {
         if (socket && user) {
-            socket.emit("join", { userType: "user", userId: user._id })
+            socket.emit("join", { userType: "user", userId: user._id, token: getToken('rider') })
 
             // Set up event listeners
             const handleRideConfirmed = (ride) => {
