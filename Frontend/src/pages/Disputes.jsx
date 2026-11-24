@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { formatFare } from '../lib/mapUtils';
 import CustomButton from '../components/ui/CustomButton';
+import { getToken } from '../lib/authToken';
 
 const REASONS = [
     { value: 'driver_cancelled', label: 'Driver cancelled the ride' },
@@ -39,7 +40,7 @@ const Disputes = () => {
     const [showAdmin, setShowAdmin] = useState(false);
 
     const authHeaders = () => ({
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
     });
 
     const fetchData = useCallback(async () => {

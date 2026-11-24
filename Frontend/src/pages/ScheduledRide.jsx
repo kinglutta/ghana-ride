@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
 import { formatFare } from '../lib/mapUtils';
+import { getToken } from '../lib/authToken';
 
 const ScheduledRide = () => {
     const navigate = useNavigate();
@@ -69,7 +70,7 @@ const ScheduledRide = () => {
                 }
             }
 
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/rides/get-fare`, {
                 params: { pickup, destination, vehicleType, lat, lng },
                 headers: { Authorization: `Bearer ${token}` },
@@ -98,7 +99,7 @@ const ScheduledRide = () => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             let lat, lng;
             if (navigator.geolocation) {
                 try {

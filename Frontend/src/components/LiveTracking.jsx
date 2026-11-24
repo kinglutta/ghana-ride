@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
 import MapFallback from './MapFallback'
 import { SocketContext } from '../context/socket.context'
+import { getToken } from '../lib/authToken';
 
 const containerStyle = {
     width: '100%',
@@ -122,7 +123,7 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const token = localStorage.getItem('token');
+                    const token = getToken();
                     const body = {
                         location: { ltd: latitude, lng: longitude },
                     };
@@ -180,7 +181,7 @@ const LiveTracking = ({ ride, showCaptain = false, showRoute = false }) => {
             }
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getToken();
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
                 const [pickupResponse, destinationResponse] = await Promise.all([

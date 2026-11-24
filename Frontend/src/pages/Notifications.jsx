@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CustomButton from '../components/ui/CustomButton';
+import { getToken } from '../lib/authToken';
 
 const NOTIFICATION_CONFIG = {
     ride_request: { icon: '🚗', color: 'text-blue-600' },
@@ -34,7 +35,7 @@ const Notifications = () => {
 
     const fetchNotifications = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/notifications`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -48,7 +49,7 @@ const Notifications = () => {
 
     const fetchUnreadCount = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/notifications/unread-count`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -60,7 +61,7 @@ const Notifications = () => {
 
     const handleMarkAsRead = async (id) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             await axios.post(`${import.meta.env.VITE_API_URL}/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -73,7 +74,7 @@ const Notifications = () => {
 
     const handleMarkAllAsRead = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             await axios.post(`${import.meta.env.VITE_API_URL}/notifications/read-all`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });

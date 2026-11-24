@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
 import RateRideModal from './RateRideModal'
 import { formatFare } from '../lib/mapUtils'
+import { getToken } from '../lib/authToken';
 
 const RideCompleted = ({ ride, onClose }) => {
     const navigate = useNavigate()
@@ -20,7 +21,7 @@ const RideCompleted = ({ ride, onClose }) => {
         setIsProcessingPayment(true)
         setNotice('')
         try {
-            const token = localStorage.getItem('token')
+            const token = getToken()
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/payment/pay-ride`,
                 { rideId: ride._id, method: 'wallet' },

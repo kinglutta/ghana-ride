@@ -11,6 +11,7 @@ import { SocketContext } from '../context/socket.context';
 import { formatFare } from '../lib/mapUtils';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
+import { getToken } from '../lib/authToken';
 
 const PaymentPage = () => {
     const [providers, setProviders] = useState([]);
@@ -37,7 +38,7 @@ const PaymentPage = () => {
 
     const fetchProviders = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/payment/providers`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -49,7 +50,7 @@ const PaymentPage = () => {
 
     const fetchWallet = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/payment/wallet`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -61,7 +62,7 @@ const PaymentPage = () => {
 
     const fetchTransactions = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/payment/transactions`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -73,7 +74,7 @@ const PaymentPage = () => {
 
     const fetchUnpaidRides = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/rides/history`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -104,7 +105,7 @@ const PaymentPage = () => {
         }
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/payment/topup`,
                 { amount: topupAmount, provider: selectedProvider, phoneNumber: topupPhone },
@@ -130,7 +131,7 @@ const PaymentPage = () => {
         }
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const body = { rideId: rideToPay._id, method: paymentMethod };
             if (paymentMethod !== 'cash' && paymentMethod !== 'wallet') {
                 body.phoneNumber = payPhone;

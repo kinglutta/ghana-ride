@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { CaptainDataContext } from '../context/captain.context'
 import AuthShell, { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
+import { setToken } from '../lib/authToken';
 
 const Captainlogin = () => {
   const [email, setEmail] = useState('')
@@ -26,7 +27,7 @@ const Captainlogin = () => {
 
       if (response.status === 200) {
         setCaptain(response.data.captain)
-        localStorage.setItem('token', response.data.token)
+        setToken('captain',  response.data.token)
         navigate('/captain-home')
       }
     } catch (err) {

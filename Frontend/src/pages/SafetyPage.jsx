@@ -10,6 +10,7 @@ import { useContext } from 'react';
 import { SocketContext } from '../context/socket.context';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
+import { getToken } from '../lib/authToken';
 
 const SafetyPage = ({ ride }) => {
     const [contacts, setContacts] = useState([]);
@@ -32,7 +33,7 @@ const SafetyPage = ({ ride }) => {
     const fetchContacts = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/safety/contacts`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -51,7 +52,7 @@ const SafetyPage = ({ ride }) => {
             return;
         }
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/safety/contacts`,
                 {
@@ -74,7 +75,7 @@ const SafetyPage = ({ ride }) => {
 
     const handleRemoveContact = async (id) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             await axios.delete(`${import.meta.env.VITE_API_URL}/safety/contacts/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -94,7 +95,7 @@ const SafetyPage = ({ ride }) => {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    const token = localStorage.getItem('token');
+                    const token = getToken();
                     const body = {
                         location: { ltd: latitude, lng: longitude },
                     };
@@ -139,7 +140,7 @@ const SafetyPage = ({ ride }) => {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             await axios.patch(
                 `${import.meta.env.VITE_API_URL}/safety/alerts/${activeAlertId}/resolve`,
                 {},

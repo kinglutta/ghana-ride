@@ -3,9 +3,10 @@ import { CaptainDataContext } from '../context/captain.context'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import AuthGateMessage from '../components/ui/AuthGateMessage'
+import { getToken, clearToken } from '../lib/authToken';
 
 const CaptainProtectedWrapper = ({ children }) => {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     const navigate = useNavigate()
     const { setCaptain } = useContext(CaptainDataContext)
     const [isLoading, setIsLoading] = useState(true)
@@ -32,7 +33,7 @@ const CaptainProtectedWrapper = ({ children }) => {
                 const status = err.response?.status
 
                 if (status === 401 || status === 403) {
-                    localStorage.removeItem('token')
+                    clearToken('captain')
                     navigate('/captain-login')
                     return
                 }

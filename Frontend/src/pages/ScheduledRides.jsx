@@ -6,6 +6,7 @@ import RoleShell from '../components/ui/RoleShell';
 import useApiResource from '../hooks/useApiResource';
 import { ActionButton, EmptyState, Panel, Pill, SectionTitle } from '../components/ui/AppKit';
 import { formatFare } from '../lib/mapUtils';
+import { getToken } from '../lib/authToken';
 
 const NAV = [
     { path: '/rider', label: 'Overview', icon: '⌂' },
@@ -24,7 +25,7 @@ const ScheduledRides = () => {
         setCancelling(id);
         setNotice('');
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             await axios.post(
                 `${import.meta.env.VITE_API_URL}/scheduled-rides/${id}/cancel`,
                 { reason: 'Cancelled by rider' },

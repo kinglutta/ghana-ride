@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import { getToken } from '../lib/authToken';
 
 /**
  * Fetches one API resource with the YENKO auth token.
@@ -13,7 +14,7 @@ const useApiResource = (path, { enabled = true, intervalMs = 0 } = {}) => {
     const load = useCallback(async () => {
         if (!enabled || !path) return;
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const response = await axios.get(`${import.meta.env.VITE_API_URL}${path}`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });

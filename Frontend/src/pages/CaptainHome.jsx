@@ -13,6 +13,7 @@ import { Brand } from '../components/ui/YenkoShell'
 import { generateCaptainAvatar } from '../utils/avatarGenerator'
 import SocketStatus from '../components/SocketStatus'
 import homepageCover from '../assets/homepage-cover.jpg'
+import { getToken, clearToken } from '../lib/authToken';
 
 const CaptainHome = () => {
 
@@ -84,7 +85,7 @@ const CaptainHome = () => {
 
             const updateLocationInDatabase = async (location) => {
                 try {
-                    const token = localStorage.getItem('token');
+                    const token = getToken();
                     if (!token) {
                         console.error('❌ No authentication token found');
                         alert('Authentication required. Please login again.');
@@ -134,7 +135,7 @@ const CaptainHome = () => {
                             );
 
                             if (shouldFix) {
-                                localStorage.removeItem('token');
+                                clearToken('captain');
                                 localStorage.removeItem('captain');
                                 alert('Token cleared! Redirecting to login...');
                                 navigate('/captain-login');
@@ -233,7 +234,7 @@ const CaptainHome = () => {
                 captainId: captain._id,
             }, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${getToken()}`
                 }
             })
 

@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
+import { getToken } from '../lib/authToken';
 
 const DOC_TYPES = [
     { value: 'license', label: 'Driver License', icon: '🪪' },
@@ -29,7 +30,7 @@ const DriverVerification = () => {
 
     const fetchVerification = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/driver-verification/me`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -68,7 +69,7 @@ const DriverVerification = () => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/driver-verification/submit`,
                 { documents: cleaned },

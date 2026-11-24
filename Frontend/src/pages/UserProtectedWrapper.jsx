@@ -3,9 +3,10 @@ import { UserDataContext } from '../context/user.context'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import AuthGateMessage from '../components/ui/AuthGateMessage'
+import { getToken, clearToken } from '../lib/authToken';
 
 const UserProtectedWrapper = ({ children }) => {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     const navigate = useNavigate()
     const { setUser } = useContext(UserDataContext)
     const [isLoading, setIsLoading] = useState(true)
@@ -33,7 +34,7 @@ const UserProtectedWrapper = ({ children }) => {
 
                 // Only a real auth failure should clear the session.
                 if (status === 401 || status === 403) {
-                    localStorage.removeItem('token')
+                    clearToken('rider')
                     navigate('/login')
                     return
                 }

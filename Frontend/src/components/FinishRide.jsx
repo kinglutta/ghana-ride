@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { generateUserAvatar } from '../utils/avatarGenerator'
+import { getToken } from '../lib/authToken';
 
 
 const FinishRide = (props) => {
@@ -16,7 +17,7 @@ const FinishRide = (props) => {
                 rideId: props.ride._id
             }, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${getToken()}`
                 }
             })
 

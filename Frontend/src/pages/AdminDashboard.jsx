@@ -22,6 +22,7 @@ import {
     StatCard,
 } from '../components/ui/AppKit';
 import { formatFare } from '../lib/mapUtils';
+import { getToken } from '../lib/authToken';
 
 const NAV = [
     { path: '/admin', label: 'Overview', icon: '⌂', end: true },
@@ -41,7 +42,7 @@ const ENDPOINTS = {
 };
 
 const authHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

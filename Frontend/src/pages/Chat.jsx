@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef, useContext, useCallback } from 'rea
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { SocketContext } from '../context/socket.context';
+import { getToken } from '../lib/authToken';
 
 const Chat = ({ ride: rideProp, onClose }) => {
     const { rideId } = useParams();
@@ -31,7 +32,7 @@ const Chat = ({ ride: rideProp, onClose }) => {
 
         const fetchRide = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = getToken();
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/rides/history`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -51,7 +52,7 @@ const Chat = ({ ride: rideProp, onClose }) => {
     const fetchChatHistory = useCallback(async () => {
         if (!activeRideId) return;
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(
                 `${import.meta.env.VITE_API_URL}/chat/history/${activeRideId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -89,7 +90,7 @@ const Chat = ({ ride: rideProp, onClose }) => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/chat/send`,
                 {

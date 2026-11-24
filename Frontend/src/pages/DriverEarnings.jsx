@@ -8,6 +8,7 @@ import axios from 'axios';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
 import { formatFare } from '../lib/mapUtils';
+import { getToken } from '../lib/authToken';
 
 const DriverEarnings = () => {
     const [earnings, setEarnings] = useState({
@@ -35,7 +36,7 @@ const DriverEarnings = () => {
 
     const fetchEarnings = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/payout/earnings`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -47,7 +48,7 @@ const DriverEarnings = () => {
 
     const fetchPayouts = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/payout/history`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -59,7 +60,7 @@ const DriverEarnings = () => {
 
     const fetchProviders = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/payment/providers`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -81,7 +82,7 @@ const DriverEarnings = () => {
         }
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/payout/request`,
                 { amount: payoutAmount, provider: payoutProvider, phoneNumber: payoutPhone },

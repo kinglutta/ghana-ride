@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { UserDataContext } from '../context/user.context'
 import AuthShell, { authFieldClass, authLabelClass } from '../components/ui/AuthShell'
+import { setToken } from '../lib/authToken';
 
 const UserSignup = () => {
   const [email, setEmail] = useState('')
@@ -29,7 +30,7 @@ const UserSignup = () => {
 
       if (response.status === 201) {
         setUser(response.data.user)
-        localStorage.setItem('token', response.data.token)
+        setToken('rider',  response.data.token)
         navigate('/home')
       }
     } catch (err) {

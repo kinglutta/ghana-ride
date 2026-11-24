@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ActionButton, Panel } from './ui/AppKit';
+import { getToken } from '../lib/authToken';
 
 const RateRideModal = ({ rideId, captainName = 'your YENKO Captain', onClose, onRated }) => {
     const [rating, setRating] = useState(5);
@@ -14,7 +15,7 @@ const RateRideModal = ({ rideId, captainName = 'your YENKO Captain', onClose, on
         setLoading(true);
         setError('');
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             await axios.post(
                 `${import.meta.env.VITE_API_URL}/rides/rate`,
                 { rideId, rating, comment },

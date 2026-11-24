@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatTime, formatFare } from '../lib/mapUtils';
 import CustomButton from '../components/ui/CustomButton';
 import RateRideModal from '../components/RateRideModal';
+import { getToken } from '../lib/authToken';
 
 const RideHistory = () => {
     const [rides, setRides] = useState([]);
@@ -20,7 +21,7 @@ const RideHistory = () => {
 
     const fetchRides = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const response = await axios.get(
                 `${import.meta.env.VITE_API_URL}/rides/history`,
                 { headers: { Authorization: `Bearer ${token}` } }

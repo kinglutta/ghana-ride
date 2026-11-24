@@ -16,6 +16,7 @@ import LiveTracking from '../components/LiveTracking';
 import { Brand } from '../components/ui/YenkoShell';
 import { generateUserAvatar } from '../utils/avatarGenerator'
 import SocketStatus from '../components/SocketStatus'
+import { getToken } from '../lib/authToken';
 
 const Home = () => {
     const [pickup, setPickup] = useState('')
@@ -95,7 +96,7 @@ const Home = () => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/maps/get-suggestions`, {
                 params: { input: e.target.value },
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${getToken()}`
                 }
             })
             console.log('Pickup suggestions response:', response.data)
@@ -120,7 +121,7 @@ const Home = () => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/maps/get-suggestions`, {
                 params: { input: e.target.value },
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${getToken()}`
                 }
             })
             console.log('Destination suggestions response:', response.data)
@@ -227,7 +228,7 @@ const Home = () => {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/rides/get-fare`, {
             params: { pickup, destination, vehicleType, lat, lng },
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${getToken()}`
             }
         })
 
@@ -262,7 +263,7 @@ const Home = () => {
                 lng
             }, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${getToken()}`
                 }
             })
 

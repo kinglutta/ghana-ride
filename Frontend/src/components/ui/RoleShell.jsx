@@ -8,6 +8,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Brand } from './YenkoShell';
 import { Avatar, LiveDot } from './AppKit';
 import usePageTitle from '../../hooks/usePageTitle';
+import { clearToken } from '../../lib/authToken';
 
 const RoleShell = ({
     title,
@@ -22,7 +23,7 @@ const RoleShell = ({
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        clearToken();
         navigate(logoutPath);
     };
 

@@ -9,6 +9,7 @@ import RoleShell from '../components/ui/RoleShell';
 import useApiResource from '../hooks/useApiResource';
 import { ActionButton, Avatar, EmptyState, Panel, Pill, SectionTitle, StatCard } from '../components/ui/AppKit';
 import { formatFare } from '../lib/mapUtils';
+import { getToken } from '../lib/authToken';
 
 const NAV = [
     { path: '/captain-home', label: 'Live Map', icon: '🗺️' },
@@ -47,7 +48,7 @@ const DriverApp = () => {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 try {
-                    const token = localStorage.getItem('token');
+                    const token = getToken();
                     await axios.post(
                         `${import.meta.env.VITE_API_URL}/captains/update-location`,
                         { location: { ltd: position.coords.latitude, lng: position.coords.longitude } },

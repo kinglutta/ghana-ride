@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { generateUserAvatar } from '../utils/avatarGenerator'
+import { getToken } from '../lib/authToken';
 
 const ConfirmRidePopUp = (props) => {
     const [otp, setOtp] = useState('')
@@ -32,7 +33,7 @@ const ConfirmRidePopUp = (props) => {
                     otp: otp
                 },
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${getToken()}`
                 }
             })
 

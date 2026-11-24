@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AuthGateMessage from '../components/ui/AuthGateMessage';
+import { getToken, clearToken } from '../lib/authToken';
 
 /**
  * AdminProtectedWrapper — verifies admin access with the server, not the client.
@@ -12,7 +13,7 @@ const AdminProtectedWrapper = ({ children }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = getToken();
         if (!token) {
             navigate('/login');
             return;
@@ -28,7 +29,7 @@ const AdminProtectedWrapper = ({ children }) => {
                 if (!active) return;
                 const status = err.response?.status;
                 if (status === 401) {
-                    localStorage.removeItem('token');
+                    clearToken('admin');
                     navigate('/login');
                     return;
                 }

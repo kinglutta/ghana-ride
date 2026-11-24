@@ -8,6 +8,7 @@ import axios from 'axios';
 import CustomButton from '../components/ui/CustomButton';
 import InputField from '../components/ui/InputField';
 import { formatFare } from '../lib/mapUtils';
+import { getToken } from '../lib/authToken';
 
 const Referral = () => {
     const [referralCode, setReferralCode] = useState('');
@@ -26,7 +27,7 @@ const Referral = () => {
 
     const fetchReferralCode = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/referrals/my-code`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -39,7 +40,7 @@ const Referral = () => {
 
     const fetchReferrals = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/referrals/my-referrals`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -51,7 +52,7 @@ const Referral = () => {
 
     const fetchCredit = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/referrals/my-credit`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -69,7 +70,7 @@ const Referral = () => {
         }
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/referrals/apply-code`,
                 { code: newReferralCode },
